@@ -86,7 +86,7 @@ static inline uint8x16x2_t vbifq_n_u8_x2(uint8x16x2_t a, uint8x16x2_t b, uint8x1
   return a;
 }
 
-static void unpack1_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void unpack1_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // y0 := x0:_______0
   // y1 := x0:______0_
   // y2 := x0:_____0__
@@ -123,7 +123,7 @@ static void unpack1_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ 
   vstpq_u8<224>(out, y7);
 }
 
-static void unpack2_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void unpack2_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // y0 := x0:______10
   // y1 := x0:____10__
   // y2 := x0:__10____
@@ -144,7 +144,7 @@ static void unpack2_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ 
   vstpq_u8<96>(out, y3);
 }
 
-static void unpack3_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void unpack3_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // y0 := x0:_____210
   // y1 := x0:__210___
   // y2 := x0:10______ + x2:_2______
@@ -183,7 +183,7 @@ static void unpack3_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ 
   vstpq_u8<224>(out, y7);
 }
 
-static void unpack4_8_64(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void unpack4_8_64(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // y0 := x0:____3210
   // y1 := x0:3210____
 
@@ -197,7 +197,7 @@ static void unpack4_8_64(const uint8_t* __restrict__ in, uint8_t* __restrict__ o
   vstpq_u8<32>(out, y1);
 }
 
-static void unpack5_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void unpack5_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // y0 := x0:___43210
   // y1 := x0:432_____ + x4:______10
   // y2 := x1:___43210
@@ -244,7 +244,7 @@ static void unpack5_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ 
   vstpq_u8<224>(out, y7);
 }
 
-static void unpack6_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void unpack6_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // y0 := x0:__543210
   // y1 := x0:54______ + x2:____3210
   // y2 := x1:__543210
@@ -271,7 +271,7 @@ static void unpack6_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ 
   vstpq_u8<96>(out, y3);
 }
 
-static void unpack7_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void unpack7_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // y0 := x0:_6543210
   // y1 := x0:6_______ + x4:__543210
   // y2 := x1:_6543210
@@ -323,12 +323,12 @@ static void unpack7_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ 
   vstpq_u8<224>(out, y7);
 }
 
-static void unpack8_8_32(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void unpack8_8_32(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // y0 := x0:76543210
   vstpq_u8<0>(out, vldpq_u8<0>(in));
 }
 
-static void pack1_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void pack1_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // x0:00000000 := x0:_______0 + x1:______0_ + x2:_____0__ + x3:____0___
   //              + x4:___0____ + x5:__0_____ + x6:_0______ + x7:0_______
   uint8x16x2_t x0 = vldpq_u8<0>(in);
@@ -353,7 +353,7 @@ static void pack1_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ ou
   vstpq_u8<0>(out, x0);
 }
 
-static void pack2_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void pack2_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // x0:00000000 := x0:______10 + x1:____10__ + x2:__10____ + x3:10______
   uint8x16x2_t x0 = vldpq_u8<0>(in);
   uint8x16x2_t x1 = vldpq_u8<32>(in);
@@ -368,7 +368,7 @@ static void pack2_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ ou
   vstpq_u8<0>(out, x0);
 }
 
-static void pack3_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void pack3_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // x0:10210210 := x0:_____210 + x1:__210___ + x2:10______
   // x3:10210210 := x3:_____210 + x4:__210___ + x5:10______
   // x6:22210210 := x6:_____210 + x7:__210___ + x2:_2______ + x5:2_______
@@ -399,7 +399,7 @@ static void pack3_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ ou
   vstpq_u8<64>(out, x6);
 }
 
-static void pack4_8_64(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void pack4_8_64(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // x0:43243210 := x0:____3210 + x1:3210____
   uint8x16x2_t x0 = vldpq_u8<0>(in);
   uint8x16x2_t x1 = vldpq_u8<32>(in);
@@ -407,7 +407,7 @@ static void pack4_8_64(const uint8_t* __restrict__ in, uint8_t* __restrict__ out
   vstpq_u8<0>(out, x0);
 }
 
-static void pack5_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void pack5_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // x0:43243210 := x0:___43210 + x1:432_____
   // x2:43243210 := x2:___43210 + x3:432_____
   // x4:43243210 := x4:___43210 + x5:432_____
@@ -441,7 +441,7 @@ static void pack5_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ ou
   vstpq_u8<128>(out, x1);
 }
 
-static void pack6_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void pack6_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // x0:54543210 := x0:__543210 + x1:54______
   // x2:54543210 := x2:__543210 + x3:54______
   // x1:32103210 := x1:____3210 + x3:3210____
@@ -461,7 +461,7 @@ static void pack6_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ ou
   vstpq_u8<64>(out, x1);
 }
 
-static void pack7_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void pack7_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // x0:66543210 := x0:_6543210 + x1:6_______
   // x2:66543210 := x2:_6543210 + x3:6_______
   // x4:66543210 := x4:_6543210 + x5:6_______
@@ -501,96 +501,134 @@ static void pack7_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ ou
   vstpq_u8<192>(out, x5);
 }
 
-static void pack8_8_32(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+static inline void pack8_8_32(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // x0:76543210 := x0:76543210
   vstpq_u8<0>(out, vldpq_u8<0>(in));
 }
 } // namespace methods
 
-void unpack(const uint8_t* __restrict__ in, uint8_t* __restrict__ out, const uint32_t bit) {
-  using namespace methods;
-  // Memory barriers stops LLVM applying common subexpression elimination,
-  // which would interfere with other optimisation passes if applied
+// Parameter table:  K, OUT-bytes, UNROLL-factor
+#define NEON_PFOR_K_TABLE(M)                                                                                           \
+  M(1, 256, 1)                                                                                                         \
+  M(2, 128, 2)                                                                                                         \
+  M(3, 256, 1)                                                                                                         \
+  M(4, 64, 4)                                                                                                          \
+  M(5, 256, 1)                                                                                                         \
+  M(6, 128, 2)                                                                                                         \
+  M(7, 256, 1)                                                                                                         \
+  M(8, 32, 8)
+
+// Helper macro to properly stringify the pragma directive
+#define NEON_PFOR_STRINGIFY(x) #x
+#define NEON_PFOR_PRAGMA(directive) _Pragma(NEON_PFOR_STRINGIFY(directive))
+
+// Code generator
+#define NEON_PFOR_DEFINE_LOOP(K, OUT, UNROLL)                                                                          \
+  static inline void unpack##K##_8_n(const uint8_t* __restrict in, uint8_t* __restrict out, size_t n) {                \
+    constexpr size_t BLOCK_OUT = OUT;                                                                                  \
+    constexpr size_t BLOCK_IN = (BLOCK_OUT * K) / 8;                                                                   \
+    __builtin_assume(!(n & (BLOCK_OUT - 1)));                                                                          \
+                                                                                                                       \
+    in = static_cast<const uint8_t*>(__builtin_assume_aligned(in, 16));                                                \
+    out = static_cast<uint8_t*>(__builtin_assume_aligned(out, 16));                                                    \
+                                                                                                                       \
+    size_t blocks = n / BLOCK_OUT;                                                                                     \
+    NEON_PFOR_PRAGMA(clang loop unroll_count(UNROLL))                                                                  \
+    for (; blocks; --blocks, in += BLOCK_IN, out += BLOCK_OUT)                                                         \
+      methods::unpack##K##_8_##OUT(in, out);                                                                           \
+  }                                                                                                                    \
+                                                                                                                       \
+  static inline void pack##K##_8_n(const uint8_t* __restrict in, uint8_t* __restrict out, size_t n) {                  \
+    constexpr size_t BLOCK_OUT = OUT;                                                                                  \
+    constexpr size_t BLOCK_IN = (BLOCK_OUT * K) / 8;                                                                   \
+    __builtin_assume(!(n & (BLOCK_OUT - 1)));                                                                          \
+                                                                                                                       \
+    in = static_cast<const uint8_t*>(__builtin_assume_aligned(in, 16));                                                \
+    out = static_cast<uint8_t*>(__builtin_assume_aligned(out, 16));                                                    \
+                                                                                                                       \
+    size_t blocks = n / BLOCK_OUT;                                                                                     \
+    NEON_PFOR_PRAGMA(clang loop unroll_count(UNROLL))                                                                  \
+    for (; blocks; --blocks, in += BLOCK_OUT, out += BLOCK_IN)                                                         \
+      methods::pack##K##_8_##OUT(in, out);                                                                             \
+  }
+
+// Emit the driver pairs
+NEON_PFOR_K_TABLE(NEON_PFOR_DEFINE_LOOP)
+
+#undef NEON_PFOR_DEFINE_LOOP
+#undef NEON_PFOR_K_TABLE
+#undef NEON_PFOR_STRINGIFY
+#undef NEON_PFOR_PRAGMA
+
+/* ───────────────────────  public front-ends  ─────────────────────────────── */
+
+void unpack(const uint8_t* __restrict__ in, uint8_t* __restrict__ out, uint32_t bit, uint32_t n) {
   switch (bit) {
   case 0:
     return;
   case 1:
-    unpack1_8_256(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 2:
-    unpack2_8_128(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 3:
-    unpack3_8_256(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 4:
-    unpack4_8_64(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 5:
-    unpack5_8_256(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 6:
-    unpack6_8_128(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 7:
-    unpack7_8_256(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 8:
-    unpack8_8_32(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  default:
+    unpack1_8_n(in, out, n);
     break;
+  case 2:
+    unpack2_8_n(in, out, n);
+    break;
+  case 3:
+    unpack3_8_n(in, out, n);
+    break;
+  case 4:
+    unpack4_8_n(in, out, n);
+    break;
+  case 5:
+    unpack5_8_n(in, out, n);
+    break;
+  case 6:
+    unpack6_8_n(in, out, n);
+    break;
+  case 7:
+    unpack7_8_n(in, out, n);
+    break;
+  case 8:
+    unpack8_8_n(in, out, n);
+    break;
+  default:
+    return;
   }
+  // Memory barrier prevents LLVM's common subexpression elimination,
+  // which interferes with other optimisation passes if applied
+  asm volatile("" ::: "memory");
 }
 
-/*assumes that integers fit in the prescribed number of bits*/
-void pack(const uint8_t* __restrict__ in, uint8_t* __restrict__ out, const uint32_t bit) {
-  using namespace methods;
+void pack(const uint8_t* __restrict__ in, uint8_t* __restrict__ out, uint32_t bit, uint32_t n) {
   switch (bit) {
   case 0:
     return;
   case 1:
-    pack1_8_256(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 2:
-    pack2_8_128(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 3:
-    pack3_8_256(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 4:
-    pack4_8_64(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 5:
-    pack5_8_256(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 6:
-    pack6_8_128(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 7:
-    pack7_8_256(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  case 8:
-    pack8_8_32(in, out);
-    asm volatile("" ::: "memory");
-    return;
-  default:
+    pack1_8_n(in, out, n);
     break;
+  case 2:
+    pack2_8_n(in, out, n);
+    break;
+  case 3:
+    pack3_8_n(in, out, n);
+    break;
+  case 4:
+    pack4_8_n(in, out, n);
+    break;
+  case 5:
+    pack5_8_n(in, out, n);
+    break;
+  case 6:
+    pack6_8_n(in, out, n);
+    break;
+  case 7:
+    pack7_8_n(in, out, n);
+    break;
+  case 8:
+    pack8_8_n(in, out, n);
+    break;
+  default:
+    return;
   }
+  asm volatile("" ::: "memory");
 }
 } // namespace NeonPForLib

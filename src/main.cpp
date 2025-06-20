@@ -20,33 +20,12 @@ constexpr bool MEASURE_BASELINE = true;  // subtract empty-loop overhead
 constexpr double NS_IN_SEC = 1e9;
 
 // ──────────────────────────────────────────────────────────────────────────────
-//  Helpers – block geometry
-// ──────────────────────────────────────────────────────────────────────────────
-static size_t neonPforInts(uint32_t k) {
-  switch (k) {
-  case 1:
-  case 3:
-  case 5:
-  case 7:
-    return 256;
-  case 2:
-  case 6:
-    return 128;
-  case 4:
-    return 64;
-  case 8:
-    return 32;
-  default:
-    return 0;
-  }
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
 // ImplSpec – pointer-based forward/inverse
 // ──────────────────────────────────────────────────────────────────────────────
 struct ImplSpec {
   std::string name; // "fastpfor" | "neonpfor"
   uint32_t bitLength;
+  uint32_t intsPerBlock;
 
   std::function<void(const uint8_t* in, uint8_t* out)> forward;
   std::function<void(const uint8_t* in, uint8_t* out)> inverse;
@@ -55,21 +34,23 @@ struct ImplSpec {
 // ──────────────────────────────────────────────────────────────────────────────
 // Factories
 // ──────────────────────────────────────────────────────────────────────────────
-static ImplSpec makeNeonPFoR(uint32_t bits) {
+static ImplSpec makeNeonPFoR(uint32_t bits, uint32_t n) {
   ImplSpec s;
   s.name = "neonpfor";
-  s.bitLength = 256 * 8;
+  s.bitLength = n * 8;
+  s.intsPerBlock = n;
 
-  s.forward = [bits](const uint8_t* in, uint8_t* out) { NeonPForLib::pack(in, out, bits); };
-  s.inverse = [bits](const uint8_t* in, uint8_t* out) { NeonPForLib::unpack(in, out, bits); };
+  s.forward = [bits, n](const uint8_t* in, uint8_t* out) { NeonPForLib::pack(in, out, bits, n); };
+  s.inverse = [bits, n](const uint8_t* in, uint8_t* out) { NeonPForLib::unpack(in, out, bits, n); };
 
   return s;
 }
 
-static ImplSpec makeFastPFoR(uint32_t bits) {
+static ImplSpec makeFastPFoR(uint32_t bits, uint32_t n) {
   ImplSpec s;
   s.name = "fastpfor";
-  s.bitLength = 128 * 32;
+  s.bitLength = 128 * 32; // fastpfor always uses 128, ignore n
+  s.intsPerBlock = 128;
 
   s.forward = [bits](const uint8_t* in, uint8_t* out) {
     const uint32_t* ip = reinterpret_cast<const uint32_t*>(in);
@@ -308,31 +289,29 @@ static void runPass(const ImplSpec& spec, uint32_t k, const char* passName,
   const double gbpsIn = static_cast<double>(bytesIn) / nsPerCall;   // 1 Byte/ns = 1 GB/s
   const double gbpsOut = static_cast<double>(bytesOut) / nsPerCall; // 1 Byte/ns = 1 GB/s
   std::cout << "Benchmarking " << std::left << std::setw(8) << spec.name << ' ' << std::setw(6) << passName
-            << " (k=" << k << ") : " << std::fixed << std::setprecision(3) << std::right << std::setw(8) << nsPerCall
-            << " ns/block, " << std::setw(8) << std::setprecision(1) << intsPerSec / 1e6 << " M int/s, " << std::setw(6)
-            << std::setprecision(3) << gbpsIn << " GB/s in, " << std::setw(6) << std::setprecision(3) << gbpsOut
-            << " GB/s out\n";
+            << " (k=" << k << ") : " << std::fixed << std::right << std::setw(8) << std::setprecision(1)
+            << intsPerSec / 1e6 << " M int/s, " << std::setw(6) << std::setprecision(3) << gbpsIn << " GB/s in, "
+            << std::setw(6) << std::setprecision(3) << gbpsOut << " GB/s out\n";
 }
 
-static void benchmark(const ImplSpec& spec, uint32_t k) {
+static void benchmarkPass(const ImplSpec& spec, uint32_t k, bool isPack) {
   // Geometry
-  size_t intsPerBlock, bytesInForward, bytesOutForward;
+  const size_t intsPerBlock = spec.intsPerBlock;
+  size_t bytesInForward, bytesOutForward;
 
   if (spec.name == "neonpfor") {
-    intsPerBlock = neonPforInts(k);
     bytesInForward = intsPerBlock;            // 1 B per int
     bytesOutForward = (intsPerBlock * k) / 8; // packed size
   } else {                                    // fastpfor
-    intsPerBlock = 128;
-    bytesInForward = intsPerBlock * 4; // 32-bit ints
+    bytesInForward = intsPerBlock * 4;        // 32-bit ints
     bytesOutForward = (intsPerBlock * k) / 8;
   }
 
-  const size_t bytesInInverse = bytesOutForward;
-  const size_t bytesOutInverse = bytesInForward;
-
-  runPass(spec, k, "pack  ", spec.forward, intsPerBlock, bytesInForward, bytesOutForward);
-  runPass(spec, k, "unpack", spec.inverse, intsPerBlock, bytesInInverse, bytesOutInverse);
+  if (isPack) {
+    runPass(spec, k, "pack  ", spec.forward, intsPerBlock, bytesInForward, bytesOutForward);
+  } else {
+    runPass(spec, k, "unpack", spec.inverse, intsPerBlock, bytesOutForward, bytesInForward);
+  }
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -374,22 +353,23 @@ int main(int argc, char* argv[]) {
 
   for (auto cmd : cmds) {
     for (auto impl : impls) {
-      for (auto k : ks) {
-        if (impl == "fastpfor") {
-          auto spec = makeFastPFoR(k);
-          if (cmd == "check")
-            checkForErrors(spec, k);
-          if (cmd == "benchmark")
-            benchmark(spec, k);
-        }
-        if (impl == "neonpfor") {
-          auto spec = makeNeonPFoR(k);
-          if (cmd == "check")
-            checkForErrors(spec, k);
-          if (cmd == "benchmark")
-            benchmark(spec, k);
-        }
+      if (cmd == "check") {
+        uint32_t n = (impl == "neonpfor") ? 256 : 128;
+        auto makeSpec = (impl == "fastpfor") ? makeFastPFoR : makeNeonPFoR;
+        for (auto k : ks)
+          checkForErrors(makeSpec(k, n), k);
       }
+
+      if (cmd == "benchmark") {
+        uint32_t n = (impl == "neonpfor") ? 4096 : 128;
+        auto makeSpec = (impl == "fastpfor") ? makeFastPFoR : makeNeonPFoR;
+        for (auto k : ks)
+          benchmarkPass(makeSpec(k, n), k, true);
+        std::cout << std::endl;
+        for (auto k : ks)
+          benchmarkPass(makeSpec(k, n), k, false);
+      }
+
       std::cout << std::endl;
     }
   }
