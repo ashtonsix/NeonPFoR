@@ -305,11 +305,13 @@ static void runPass(const ImplSpec& spec, uint32_t k, const char* passName,
   const double nsPerCall = (nsTotal - baselineNS) / ITERATIONS;
 
   const double intsPerSec = (static_cast<double>(intsPerBlock) * NS_IN_SEC) / nsPerCall;
-  const double gbps = static_cast<double>(bytesIn) / nsPerCall; // 1 Byte/ns = 1 GB/s
+  const double gbpsIn = static_cast<double>(bytesIn) / nsPerCall;   // 1 Byte/ns = 1 GB/s
+  const double gbpsOut = static_cast<double>(bytesOut) / nsPerCall; // 1 Byte/ns = 1 GB/s
   std::cout << "Benchmarking " << std::left << std::setw(8) << spec.name << ' ' << std::setw(6) << passName
             << " (k=" << k << ") : " << std::fixed << std::setprecision(3) << std::right << std::setw(8) << nsPerCall
             << " ns/block, " << std::setw(8) << std::setprecision(1) << intsPerSec / 1e6 << " M int/s, " << std::setw(6)
-            << std::setprecision(3) << gbps << " GB/s\n";
+            << std::setprecision(3) << gbpsIn << " GB/s in, " << std::setw(6) << std::setprecision(3) << gbpsOut
+            << " GB/s out\n";
 }
 
 static void benchmark(const ImplSpec& spec, uint32_t k) {
