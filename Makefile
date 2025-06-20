@@ -7,9 +7,6 @@ CXXFLAGS = $(CFLAGS) -std=c++17
 # Tuning flags for NeonPFoR
 CUSTOM_FLAGS = -march=armv9-a -mcpu=neoverse-v2 -mtune=neoverse-v2
 
-# TypeScript runtime
-BUN = /home/developer/.bun/bin/bun
-
 # Directories
 DATA_DIR = data
 BUILD_DIR = build
