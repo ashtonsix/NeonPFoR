@@ -1,0 +1,8 @@
+CompileFlags:
+  Add:
+    - -I${workspaceFolder}/src
+    - -I${workspaceFolder}/src/library
+    - -I/usr/local/include/simde
+    - -march=armv9-a
+    - -DSIMDE_ENABLE_NATIVE_ALIASES
+    - -std=c++17

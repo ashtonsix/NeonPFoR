@@ -1,0 +1,16 @@
+{
+  "name": "NeonPFoR",
+  "dockerFile": "Dockerfile",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "clangd.inlayHints.enable": false
+      },
+      "extensions": ["llvm-vs-code-extensions.vscode-clangd"]
+    }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/neon-pfor,type=bind",
+  "workspaceFolder": "/neon-pfor",
+  "remoteUser": "developer"
+}

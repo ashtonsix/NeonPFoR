@@ -1,0 +1,72 @@
+---
+Language: Cpp
+# Use LLVM style as base
+BasedOnStyle: LLVM
+# Set column width
+ColumnLimit: 120
+# Indentation settings
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+# Bracket settings
+BreakBeforeBraces: Attach
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+# Alignment settings
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: Right
+AlignOperands: true
+AlignTrailingComments: true
+# Pointer and reference alignment
+PointerAlignment: Left
+# Parameter wrapping
+BinPackArguments: true
+BinPackParameters: true
+# Access modifier offset
+AccessModifierOffset: -2
+# Spacing settings
+SpaceAfterCStyleCast: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles: false
+SpacesInContainerLiterals: false
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+# Line break settings
+AllowAllParametersOfDeclarationOnNextLine: true
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: Yes
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+BreakStringLiterals: true
+# Constructor initializer settings
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+ConstructorInitializerIndentWidth: 4
+# Continuation indentation
+ContinuationIndentWidth: 4
+# Namespace settings
+NamespaceIndentation: None
+# Include sorting
+SortIncludes: true
+IncludeBlocks: Preserve
+# Comment settings
+ReflowComments: true
+# Short constructs
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortLambdasOnASingleLine: All
+# C++11 features
+Cpp11BracedListStyle: true
+# Empty line settings
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
