@@ -86,7 +86,7 @@ static inline bool testDeltaRoundtrip(const DeltaSpec& spec, const std::string& 
   auto originalData = generateTestData(DELTA_TEST_SIZE);
   auto testData = originalData;
 
-  std::cout << "Checking " << spec.name << " delta-" << deltaType << "...";
+  std::cout << "check " << spec.name << " delta-" << deltaType << "...";
 
   try {
     if (deltaType == "1") {
@@ -148,8 +148,8 @@ static inline void benchmarkDeltaOperation(const DeltaSpec& spec, const std::str
   const double intsPerSec = (static_cast<double>(DELTA_TEST_SIZE) * NS_IN_SEC) / nsPerCall;
   const double gbpsIn = static_cast<double>(DELTA_TEST_SIZE * sizeof(uint32_t)) / nsPerCall;
 
-  std::cout << "Benchmarking " << std::left << std::setw(8) << spec.name << " delta-" << deltaType << " "
-            << std::setw(6) << operation << " : " << std::fixed << std::right << std::setw(8) << std::setprecision(1)
+  std::cout << "bench " << std::left << std::setw(8) << spec.name << " delta-" << deltaType << " " << std::setw(6)
+            << operation << " : " << std::fixed << std::right << std::setw(8) << std::setprecision(1)
             << intsPerSec / 1e6 << " M int/s, " << std::setw(6) << std::setprecision(3) << gbpsIn << " GB/s\n";
 }
 

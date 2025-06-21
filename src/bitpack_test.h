@@ -42,6 +42,7 @@ struct ImplSpec {
   std::string name; // "fastpfor" | "neonpfor"
   uint32_t bitLength;
   uint32_t intsPerBlock;
+  uint32_t width; // input/output width in bits
 
   std::function<void(const uint8_t* in, uint8_t* out)> forward;
   std::function<void(const uint8_t* in, uint8_t* out)> inverse;
@@ -55,6 +56,7 @@ static inline ImplSpec makeNeonPFoR(uint32_t bits, uint32_t n) {
   s.name = "neonpfor";
   s.bitLength = n * 8;
   s.intsPerBlock = n;
+  s.width = 8;
 
   s.forward = [bits, n](const uint8_t* in, uint8_t* out) { NeonPForLib::pack(in, out, bits, n); };
   s.inverse = [bits, n](const uint8_t* in, uint8_t* out) { NeonPForLib::unpack(in, out, bits, n); };
@@ -67,6 +69,7 @@ static inline ImplSpec makeFastPFoR(uint32_t bits, uint32_t /* n */) {
   s.name = "fastpfor";
   s.bitLength = 128 * 32; // fastpfor always uses 128, ignore n
   s.intsPerBlock = 128;
+  s.width = 32;
 
   s.forward = [bits](const uint8_t* in, uint8_t* out) {
     const uint32_t* ip = reinterpret_cast<const uint32_t*>(in);
@@ -223,7 +226,7 @@ static inline std::vector<PermutationError> checkBijectivity(const std::vector<i
 }
 
 static inline bool checkForErrors(const ImplSpec& s, uint32_t bits) {
-  std::cout << "Checking " << s.name << " bitpack (k=" << bits << ")...";
+  std::cout << "check " << s.name << " bitpack (k=" << bits << ")...";
 
   const auto fperm = extractPermutation(s.bitLength, s.forward);
   const auto iperm = extractPermutation(s.bitLength, s.inverse);
@@ -254,7 +257,7 @@ static inline bool checkForErrors(const ImplSpec& s, uint32_t bits) {
 // ──────────────────────────────────────────────────────────────────────────────
 static inline void runPass(const ImplSpec& spec, uint32_t k, const char* passName,
                            const std::function<void(const uint8_t*, uint8_t*)>& fn, size_t intsPerBlock, size_t bytesIn,
-                           size_t bytesOut) {
+                           size_t bytesOut, bool isPack) {
   const size_t BUF = std::max(bytesIn, bytesOut);
   alignas(64) std::vector<uint8_t> in(BUF), out(BUF);
   std::iota(in.begin(), in.end(), 0);
@@ -277,10 +280,21 @@ static inline void runPass(const ImplSpec& spec, uint32_t k, const char* passNam
   const double intsPerSec = (static_cast<double>(intsPerBlock) * NS_IN_SEC) / nsPerCall;
   const double gbpsIn = static_cast<double>(bytesIn) / nsPerCall;   // 1 Byte/ns = 1 GB/s
   const double gbpsOut = static_cast<double>(bytesOut) / nsPerCall; // 1 Byte/ns = 1 GB/s
-  std::cout << "Benchmarking " << std::left << std::setw(8) << spec.name << " bitpack " << std::setw(6) << passName
-            << " (k=" << k << ") : " << std::fixed << std::right << std::setw(8) << std::setprecision(1)
-            << intsPerSec / 1e6 << " M int/s, " << std::setw(6) << std::setprecision(3) << gbpsIn << " GB/s in, "
-            << std::setw(6) << std::setprecision(3) << gbpsOut << " GB/s out\n";
+
+  // Format width transformation: pack shows width→k, unpack shows k→width
+  std::string widthDisplay;
+  if (isPack) {
+    widthDisplay = std::to_string(spec.width) + "→" + std::to_string(k);
+  } else {
+    widthDisplay = std::to_string(k) + "→" + std::to_string(spec.width);
+  }
+
+  std::cout << "bench " << std::left << std::setw(8) << spec.name << " " << std::setw(6) << passName
+            << " (k=" << widthDisplay << ")"
+            << std::string(std::max(0, 7 - static_cast<int>(widthDisplay.length())), ' ') << ": " << std::fixed
+            << std::right << std::setw(8) << std::setprecision(1) << intsPerSec / 1e6 << " M int/s, " << std::setw(6)
+            << std::setprecision(3) << gbpsIn << " GB/s in, " << std::setw(6) << std::setprecision(3) << gbpsOut
+            << " GB/s out\n";
 }
 
 static inline void benchmarkPass(const ImplSpec& spec, uint32_t k, bool isPack) {
@@ -297,9 +311,9 @@ static inline void benchmarkPass(const ImplSpec& spec, uint32_t k, bool isPack) 
   }
 
   if (isPack) {
-    runPass(spec, k, "pack  ", spec.forward, intsPerBlock, bytesInForward, bytesOutForward);
+    runPass(spec, k, "pack  ", spec.forward, intsPerBlock, bytesInForward, bytesOutForward, isPack);
   } else {
-    runPass(spec, k, "unpack", spec.inverse, intsPerBlock, bytesOutForward, bytesInForward);
+    runPass(spec, k, "unpack", spec.inverse, intsPerBlock, bytesOutForward, bytesInForward, isPack);
   }
 }
 

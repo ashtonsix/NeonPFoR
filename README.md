@@ -31,66 +31,49 @@ Tested on freshly provisioned ARM Ubuntu 24 instance (AWS m8g.large). Might not 
 
 3. Install the 'clangd' extension for C++ language support
 
-## Running tests and benchmarks
+## Running
 
-```sh
-make && ./build/inspect all all all
-```
+For help: `make && ./build/inspect help`
 
-You should see something like:
+For bitpack benchmarks: `make && ./build/inspect benchmark bitpack all`
+
+Which should yield something like:
 
 ```txt
-Checking fastpfor (k=1)... passed
-Checking fastpfor (k=2)... passed
-Checking fastpfor (k=3)... passed
-Checking fastpfor (k=4)... passed
-Checking fastpfor (k=5)... passed
-Checking fastpfor (k=6)... passed
-Checking fastpfor (k=7)... passed
-Checking fastpfor (k=8)... passed
+=== benchmark bitpack ===
+bench fastpfor pack   (k=32→1) :  10194.6 M int/s, 40.779 GB/s in,  1.274 GB/s out
+bench fastpfor pack   (k=32→2) :  11621.9 M int/s, 46.488 GB/s in,  2.905 GB/s out
+bench fastpfor pack   (k=32→3) :  10092.2 M int/s, 40.369 GB/s in,  3.785 GB/s out
+bench fastpfor pack   (k=32→4) :  12629.6 M int/s, 50.518 GB/s in,  6.315 GB/s out
+bench fastpfor pack   (k=32→5) :   9511.3 M int/s, 38.045 GB/s in,  5.945 GB/s out
+bench fastpfor pack   (k=32→6) :  10809.3 M int/s, 43.237 GB/s in,  8.107 GB/s out
+bench fastpfor pack   (k=32→7) :   9203.8 M int/s, 36.815 GB/s in,  8.053 GB/s out
+bench fastpfor pack   (k=32→8) :  13994.3 M int/s, 55.977 GB/s in, 13.994 GB/s out
 
-Checking neonpfor (k=1)... passed
-Checking neonpfor (k=2)... passed
-Checking neonpfor (k=3)... passed
-Checking neonpfor (k=4)... passed
-Checking neonpfor (k=5)... passed
-Checking neonpfor (k=6)... passed
-Checking neonpfor (k=7)... passed
-Checking neonpfor (k=8)... passed
+bench fastpfor unpack (k=1→32) :  12196.7 M int/s,  1.525 GB/s in, 48.787 GB/s out
+bench fastpfor unpack (k=2→32) :  13470.2 M int/s,  3.368 GB/s in, 53.881 GB/s out
+bench fastpfor unpack (k=3→32) :  13251.6 M int/s,  4.969 GB/s in, 53.006 GB/s out
+bench fastpfor unpack (k=4→32) :  14594.3 M int/s,  7.297 GB/s in, 58.377 GB/s out
+bench fastpfor unpack (k=5→32) :  12685.7 M int/s,  7.929 GB/s in, 50.743 GB/s out
+bench fastpfor unpack (k=6→32) :  13114.3 M int/s,  9.836 GB/s in, 52.457 GB/s out
+bench fastpfor unpack (k=7→32) :  12313.7 M int/s, 10.774 GB/s in, 49.255 GB/s out
+bench fastpfor unpack (k=8→32) :  14104.3 M int/s, 14.104 GB/s in, 56.417 GB/s out
 
-Benchmarking fastpfor pack   (k=1) :  10236.6 M int/s, 40.946 GB/s in,  1.280 GB/s out
-Benchmarking fastpfor pack   (k=2) :  11638.4 M int/s, 46.553 GB/s in,  2.910 GB/s out
-Benchmarking fastpfor pack   (k=3) :   9800.5 M int/s, 39.202 GB/s in,  3.675 GB/s out
-Benchmarking fastpfor pack   (k=4) :  12665.4 M int/s, 50.662 GB/s in,  6.333 GB/s out
-Benchmarking fastpfor pack   (k=5) :   9519.9 M int/s, 38.080 GB/s in,  5.950 GB/s out
-Benchmarking fastpfor pack   (k=6) :  10813.2 M int/s, 43.253 GB/s in,  8.110 GB/s out
-Benchmarking fastpfor pack   (k=7) :   9203.8 M int/s, 36.815 GB/s in,  8.053 GB/s out
-Benchmarking fastpfor pack   (k=8) :  14017.6 M int/s, 56.071 GB/s in, 14.018 GB/s out
+bench neonpfor pack   (k=8→1)  :  80259.0 M int/s, 80.259 GB/s in, 10.032 GB/s out
+bench neonpfor pack   (k=8→2)  :  79545.0 M int/s, 79.545 GB/s in, 19.886 GB/s out
+bench neonpfor pack   (k=8→3)  :  68933.6 M int/s, 68.934 GB/s in, 25.850 GB/s out
+bench neonpfor pack   (k=8→4)  :  87159.3 M int/s, 87.159 GB/s in, 43.580 GB/s out
+bench neonpfor pack   (k=8→5)  :  59482.8 M int/s, 59.483 GB/s in, 37.177 GB/s out
+bench neonpfor pack   (k=8→6)  :  59704.5 M int/s, 59.705 GB/s in, 44.778 GB/s out
+bench neonpfor pack   (k=8→7)  :  53837.4 M int/s, 53.837 GB/s in, 47.108 GB/s out
+bench neonpfor pack   (k=8→8)  :  72358.9 M int/s, 72.359 GB/s in, 72.359 GB/s out
 
-Benchmarking fastpfor unpack (k=1) :  12001.4 M int/s,  1.500 GB/s in, 48.005 GB/s out
-Benchmarking fastpfor unpack (k=2) :  13338.9 M int/s,  3.335 GB/s in, 53.356 GB/s out
-Benchmarking fastpfor unpack (k=3) :  13796.7 M int/s,  5.174 GB/s in, 55.187 GB/s out
-Benchmarking fastpfor unpack (k=4) :  14618.0 M int/s,  7.309 GB/s in, 58.472 GB/s out
-Benchmarking fastpfor unpack (k=5) :  12823.2 M int/s,  8.014 GB/s in, 51.293 GB/s out
-Benchmarking fastpfor unpack (k=6) :  13150.7 M int/s,  9.863 GB/s in, 52.603 GB/s out
-Benchmarking fastpfor unpack (k=7) :  12487.3 M int/s, 10.926 GB/s in, 49.949 GB/s out
-Benchmarking fastpfor unpack (k=8) :  13721.0 M int/s, 13.721 GB/s in, 54.884 GB/s out
-
-Benchmarking neonpfor pack   (k=1) :  84263.8 M int/s, 84.264 GB/s in, 10.533 GB/s out
-Benchmarking neonpfor pack   (k=2) :  88411.3 M int/s, 88.411 GB/s in, 22.103 GB/s out
-Benchmarking neonpfor pack   (k=3) :  77173.5 M int/s, 77.173 GB/s in, 28.940 GB/s out
-Benchmarking neonpfor pack   (k=4) :  90422.2 M int/s, 90.422 GB/s in, 45.211 GB/s out
-Benchmarking neonpfor pack   (k=5) :  58748.5 M int/s, 58.748 GB/s in, 36.718 GB/s out
-Benchmarking neonpfor pack   (k=6) :  59027.6 M int/s, 59.028 GB/s in, 44.271 GB/s out
-Benchmarking neonpfor pack   (k=7) :  53728.2 M int/s, 53.728 GB/s in, 47.012 GB/s out
-Benchmarking neonpfor pack   (k=8) :  69873.3 M int/s, 69.873 GB/s in, 69.873 GB/s out
-
-Benchmarking neonpfor unpack (k=1) :  62674.9 M int/s,  7.834 GB/s in, 62.675 GB/s out
-Benchmarking neonpfor unpack (k=2) :  58799.0 M int/s, 14.700 GB/s in, 58.799 GB/s out
-Benchmarking neonpfor unpack (k=3) :  57992.2 M int/s, 21.747 GB/s in, 57.992 GB/s out
-Benchmarking neonpfor unpack (k=4) :  61975.2 M int/s, 30.988 GB/s in, 61.975 GB/s out
-Benchmarking neonpfor unpack (k=5) :  51924.8 M int/s, 32.453 GB/s in, 51.925 GB/s out
-Benchmarking neonpfor unpack (k=6) :  54377.3 M int/s, 40.783 GB/s in, 54.377 GB/s out
-Benchmarking neonpfor unpack (k=7) :  51400.8 M int/s, 44.976 GB/s in, 51.401 GB/s out
-Benchmarking neonpfor unpack (k=8) :  73164.3 M int/s, 73.164 GB/s in, 73.164 GB/s out
+bench neonpfor unpack (k=1→8)  :  64252.3 M int/s,  8.032 GB/s in, 64.252 GB/s out
+bench neonpfor unpack (k=2→8)  :  62821.4 M int/s, 15.705 GB/s in, 62.821 GB/s out
+bench neonpfor unpack (k=3→8)  :  54753.1 M int/s, 20.532 GB/s in, 54.753 GB/s out
+bench neonpfor unpack (k=4→8)  :  66936.0 M int/s, 33.468 GB/s in, 66.936 GB/s out
+bench neonpfor unpack (k=5→8)  :  58039.4 M int/s, 36.275 GB/s in, 58.039 GB/s out
+bench neonpfor unpack (k=6→8)  :  54134.0 M int/s, 40.601 GB/s in, 54.134 GB/s out
+bench neonpfor unpack (k=7→8)  :  48989.6 M int/s, 42.866 GB/s in, 48.990 GB/s out
+bench neonpfor unpack (k=8→8)  :  72384.4 M int/s, 72.384 GB/s in, 72.384 GB/s out
 ```
