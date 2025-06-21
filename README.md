@@ -34,7 +34,7 @@ Tested on freshly provisioned ARM Ubuntu 24 instance (AWS m8g.large). Might not 
 ## Running tests and benchmarks
 
 ```sh
-make && ./build/bitpack-inspect all all all
+make && ./build/inspect all all all
 ```
 
 You should see something like:
