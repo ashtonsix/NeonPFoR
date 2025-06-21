@@ -86,6 +86,8 @@ static inline uint8x16x2_t vbifq_n_u8_x2(uint8x16x2_t a, uint8x16x2_t b, uint8x1
   return a;
 }
 
+/* ───────────────────────  concrete kernels  ─────────────────────────────── */
+
 static inline void unpack1_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // y0 := x0:_______0
   // y1 := x0:______0_
@@ -506,6 +508,8 @@ static inline void pack8_8_32(const uint8_t* __restrict__ in, uint8_t* __restric
   vstpq_u8<0>(out, vldpq_u8<0>(in));
 }
 
+/* ───────────────────────  kernel drivers  ─────────────────────────────── */
+
 #define PFOR_PRAGMA_STRINGIFY(x) #x
 #define PFOR_LOOP_PRAGMA_UNROLL(directive) _Pragma(PFOR_PRAGMA_STRINGIFY(directive))
 
@@ -533,36 +537,43 @@ inline void loop(const uint8_t* __restrict in, uint8_t* __restrict out, std::siz
 
 #undef PFOR_PRAGMA_STRINGIFY
 #undef PFOR_LOOP_PRAGMA_UNROLL
-
-using fn_t = void (*)(const uint8_t*, uint8_t*, std::size_t);
-
-struct Entry {
-  std::uint32_t out_bytes;
-  std::uint32_t unroll;
-  fn_t pack_n;
-  fn_t unpack_n;
-};
-
-constexpr Entry k_table[] = {
-    /* 0 */ {0, 0, nullptr, nullptr},
-    /* 1 */ {256, 1, loop<1, 256, 1, pack1_8_256, true>, loop<1, 256, 1, unpack1_8_256, false>},
-    /* 2 */ {128, 2, loop<2, 128, 2, pack2_8_128, true>, loop<2, 128, 2, unpack2_8_128, false>},
-    /* 3 */ {256, 1, loop<3, 256, 1, pack3_8_256, true>, loop<3, 256, 1, unpack3_8_256, false>},
-    /* 4 */ {64, 4, loop<4, 64, 4, pack4_8_64, true>, loop<4, 64, 4, unpack4_8_64, false>},
-    /* 5 */ {256, 1, loop<5, 256, 1, pack5_8_256, true>, loop<5, 256, 1, unpack5_8_256, false>},
-    /* 6 */ {128, 2, loop<6, 128, 2, pack6_8_128, true>, loop<6, 128, 2, unpack6_8_128, false>},
-    /* 7 */ {256, 1, loop<7, 256, 1, pack7_8_256, true>, loop<7, 256, 1, unpack7_8_256, false>},
-    /* 8 */ {32, 8, loop<8, 32, 8, pack8_8_32, true>, loop<8, 32, 8, unpack8_8_32, false>},
-};
-
 } // namespace impl
 
 /* ───────────────────────  public front-ends  ─────────────────────────────── */
 
+using namespace impl;
+
 void pack(const uint8_t* in, uint8_t* out, std::uint32_t bit, std::uint32_t n) {
   if (bit == 0 || bit > 8)
     return;
-  impl::k_table[bit].pack_n(in, out, n);
+
+  switch (bit) {
+  case 1:
+    loop<1, 256, 1, pack1_8_256, true>(in, out, n);
+    break;
+  case 2:
+    loop<2, 128, 2, pack2_8_128, true>(in, out, n);
+    break;
+  case 3:
+    loop<3, 256, 1, pack3_8_256, true>(in, out, n);
+    break;
+  case 4:
+    loop<4, 64, 4, pack4_8_64, true>(in, out, n);
+    break;
+  case 5:
+    loop<5, 256, 1, pack5_8_256, true>(in, out, n);
+    break;
+  case 6:
+    loop<6, 128, 2, pack6_8_128, true>(in, out, n);
+    break;
+  case 7:
+    loop<7, 256, 1, pack7_8_256, true>(in, out, n);
+    break;
+  case 8:
+    loop<8, 32, 8, pack8_8_32, true>(in, out, n);
+    break;
+  }
+
   // Memory barrier prevents LLVM's common subexpression elimination,
   // which interferes with other optimisation passes if applied
   asm volatile("" ::: "memory");
@@ -571,7 +582,33 @@ void pack(const uint8_t* in, uint8_t* out, std::uint32_t bit, std::uint32_t n) {
 void unpack(const uint8_t* in, uint8_t* out, std::uint32_t bit, std::uint32_t n) {
   if (bit == 0 || bit > 8)
     return;
-  impl::k_table[bit].unpack_n(in, out, n);
+  switch (bit) {
+  case 1:
+    loop<1, 256, 1, unpack1_8_256, false>(in, out, n);
+    break;
+  case 2:
+    loop<2, 128, 2, unpack2_8_128, false>(in, out, n);
+    break;
+  case 3:
+    loop<3, 256, 1, unpack3_8_256, false>(in, out, n);
+    break;
+  case 4:
+    loop<4, 64, 4, unpack4_8_64, false>(in, out, n);
+    break;
+  case 5:
+    loop<5, 256, 1, unpack5_8_256, false>(in, out, n);
+    break;
+  case 6:
+    loop<6, 128, 2, unpack6_8_128, false>(in, out, n);
+    break;
+  case 7:
+    loop<7, 256, 1, unpack7_8_256, false>(in, out, n);
+    break;
+  case 8:
+    loop<8, 32, 8, unpack8_8_32, false>(in, out, n);
+    break;
+  }
+
   asm volatile("" ::: "memory");
 }
 } // namespace NeonPForLib
