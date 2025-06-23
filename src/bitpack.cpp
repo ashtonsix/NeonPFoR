@@ -86,6 +86,20 @@ static inline uint8x16x2_t vbifq_n_u8_x2(uint8x16x2_t a, uint8x16x2_t b, uint8x1
   return a;
 }
 
+static inline uint8x16x2_t vtrn1q_u8_x2(uint8x16x2_t a, uint8x16x2_t b) {
+  uint8x16x2_t result;
+  result.val[0] = vtrn1q_u8(a.val[0], b.val[0]);
+  result.val[1] = vtrn1q_u8(a.val[1], b.val[1]);
+  return result;
+}
+
+static inline uint8x16x2_t vtrn2q_u8_x2(uint8x16x2_t a, uint8x16x2_t b) {
+  uint8x16x2_t result;
+  result.val[0] = vtrn2q_u8(a.val[0], b.val[0]);
+  result.val[1] = vtrn2q_u8(a.val[1], b.val[1]);
+  return result;
+}
+
 /* ───────────────────────  concrete kernels  ─────────────────────────────── */
 
 static inline void unpack1_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
@@ -100,28 +114,28 @@ static inline void unpack1_8_256(const uint8_t* __restrict__ in, uint8_t* __rest
   uint8x16_t mask = vdupq_n_u8(0x01);
 
   uint8x16x2_t x0 = vldpq_u8<0>(in);
-  uint8x16x2_t y0 = vandq_u8_x2(x0, mask);
+  uint8x16x2_t y0 = vandq_u8_x2(x0, mask); // x0->y0 (1 bit)
   vstpq_u8<0>(out, y0);
 
-  uint8x16x2_t y1 = vandq_u8_x2(vshrq_n_u8_x2<1>(x0), mask);
+  uint8x16x2_t y1 = vandq_u8_x2(vshrq_n_u8_x2<1>(x0), mask); // x0->y1 (1 bit)
   vstpq_u8<32>(out, y1);
 
-  uint8x16x2_t y2 = vandq_u8_x2(vshrq_n_u8_x2<2>(x0), mask);
+  uint8x16x2_t y2 = vandq_u8_x2(vshrq_n_u8_x2<2>(x0), mask); // x0->y2 (1 bit)
   vstpq_u8<64>(out, y2);
 
-  uint8x16x2_t y3 = vandq_u8_x2(vshrq_n_u8_x2<3>(x0), mask);
+  uint8x16x2_t y3 = vandq_u8_x2(vshrq_n_u8_x2<3>(x0), mask); // x0->y3 (1 bit)
   vstpq_u8<96>(out, y3);
 
-  uint8x16x2_t y4 = vandq_u8_x2(vshrq_n_u8_x2<4>(x0), mask);
+  uint8x16x2_t y4 = vandq_u8_x2(vshrq_n_u8_x2<4>(x0), mask); // x0->y4 (1 bit)
   vstpq_u8<128>(out, y4);
 
-  uint8x16x2_t y5 = vandq_u8_x2(vshrq_n_u8_x2<5>(x0), mask);
+  uint8x16x2_t y5 = vandq_u8_x2(vshrq_n_u8_x2<5>(x0), mask); // x0->y5 (1 bit)
   vstpq_u8<160>(out, y5);
 
-  uint8x16x2_t y6 = vandq_u8_x2(vshrq_n_u8_x2<6>(x0), mask);
+  uint8x16x2_t y6 = vandq_u8_x2(vshrq_n_u8_x2<6>(x0), mask); // x0->y6 (1 bit)
   vstpq_u8<192>(out, y6);
 
-  uint8x16x2_t y7 = vshrq_n_u8_x2<7>(x0);
+  uint8x16x2_t y7 = vshrq_n_u8_x2<7>(x0); // x0->y7 (1 bit)
   vstpq_u8<224>(out, y7);
 }
 
@@ -133,16 +147,16 @@ static inline void unpack2_8_128(const uint8_t* __restrict__ in, uint8_t* __rest
   uint8x16_t mask = vdupq_n_u8(0b00000011);
 
   uint8x16x2_t x0 = vldpq_u8<0>(in);
-  uint8x16x2_t y0 = vandq_u8_x2(x0, mask);
+  uint8x16x2_t y0 = vandq_u8_x2(x0, mask); // x0->y0 (2 bits)
   vstpq_u8<0>(out, y0);
 
-  uint8x16x2_t y1 = vandq_u8_x2(vshrq_n_u8_x2<2>(x0), mask);
+  uint8x16x2_t y1 = vandq_u8_x2(vshrq_n_u8_x2<2>(x0), mask); // x0->y1 (2 bits)
   vstpq_u8<32>(out, y1);
 
-  uint8x16x2_t y2 = vandq_u8_x2(vshrq_n_u8_x2<4>(x0), mask);
+  uint8x16x2_t y2 = vandq_u8_x2(vshrq_n_u8_x2<4>(x0), mask); // x0->y2 (2 bits)
   vstpq_u8<64>(out, y2);
 
-  uint8x16x2_t y3 = vshrq_n_u8_x2<6>(x0);
+  uint8x16x2_t y3 = vshrq_n_u8_x2<6>(x0); // x0->y3 (2 bits)
   vstpq_u8<96>(out, y3);
 }
 
@@ -330,6 +344,69 @@ static inline void unpack8_8_32(const uint8_t* __restrict__ in, uint8_t* __restr
   vstpq_u8<0>(out, vldpq_u8<0>(in));
 }
 
+// Load 32 bytes of LSBs from input at offset n, merge with MSBs via transpose,
+// store 64 bytes of 16-bit output at offset n*2
+template <int n>
+static inline void loadLsb_mergeMsb_store16(const uint8_t* __restrict__ in, uint8_t* __restrict__ out,
+                                            uint8x16x2_t msb) {
+  // 32 B of little-endian LSBs for this tile
+  const uint8x16x2_t lsb = vldpq_u8<n>(in);
+
+  // pair-wise interleave: l0,h0,l1,h1…   → two 16-byte lanes
+  const uint8x16x2_t lo = vtrn1q_u8_x2(lsb, msb);
+  const uint8x16x2_t hi = vtrn2q_u8_x2(lsb, msb);
+
+  // write the 64 B of 16-bit output
+  vstpq_u8<n * 2>(out, lo);      // low  half
+  vstpq_u8<n * 2 + 32>(out, hi); // high half
+}
+
+static inline void unpack9_16_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+  uint8x16_t mask = vdupq_n_u8(0x01);
+
+  uint8x16x2_t x0 = vldpq_u8<256>(in);
+  uint8x16x2_t y0 = vandq_u8_x2(x0, mask); // x0->y0 (1 bit)
+  loadLsb_mergeMsb_store16<0>(in, out, y0);
+
+  uint8x16x2_t y1 = vandq_u8_x2(vshrq_n_u8_x2<1>(x0), mask); // x0->y1 (1 bit)
+  loadLsb_mergeMsb_store16<32>(in, out, y1);
+
+  uint8x16x2_t y2 = vandq_u8_x2(vshrq_n_u8_x2<2>(x0), mask); // x0->y2 (1 bit)
+  loadLsb_mergeMsb_store16<64>(in, out, y2);
+
+  uint8x16x2_t y3 = vandq_u8_x2(vshrq_n_u8_x2<3>(x0), mask); // x0->y3 (1 bit)
+  loadLsb_mergeMsb_store16<96>(in, out, y3);
+
+  uint8x16x2_t y4 = vandq_u8_x2(vshrq_n_u8_x2<4>(x0), mask); // x0->y4 (1 bit)
+  loadLsb_mergeMsb_store16<128>(in, out, y4);
+
+  uint8x16x2_t y5 = vandq_u8_x2(vshrq_n_u8_x2<5>(x0), mask); // x0->y5 (1 bit)
+  loadLsb_mergeMsb_store16<160>(in, out, y5);
+
+  uint8x16x2_t y6 = vandq_u8_x2(vshrq_n_u8_x2<6>(x0), mask); // x0->y6 (1 bit)
+  loadLsb_mergeMsb_store16<192>(in, out, y6);
+
+  uint8x16x2_t y7 = vshrq_n_u8_x2<7>(x0); // x0->y7 (1 bit)
+  loadLsb_mergeMsb_store16<224>(in, out, y7);
+}
+
+static inline void unpack10_16_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+  uint8x16_t mask = vdupq_n_u8(0b00000011);
+
+  uint8x16x2_t x0 = vldpq_u8<128>(in);
+  uint8x16x2_t y0 = vandq_u8_x2(x0, mask); // x0->y0 (2 bits)
+  loadLsb_mergeMsb_store16<0>(in, out, y0);
+
+  uint8x16x2_t y1 = vandq_u8_x2(vshrq_n_u8_x2<2>(x0), mask); // x0->y1 (2 bits)
+  loadLsb_mergeMsb_store16<32>(in, out, y1);
+
+  uint8x16x2_t y2 = vandq_u8_x2(vshrq_n_u8_x2<4>(x0), mask); // x0->y2 (2 bits)
+  loadLsb_mergeMsb_store16<64>(in, out, y2);
+
+  uint8x16x2_t y3 = vshrq_n_u8_x2<6>(x0); // x0->y3 (2 bits)
+  loadLsb_mergeMsb_store16<96>(in, out, y3);
+}
+
 static inline void pack1_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // x0:00000000 := x0:_______0 + x1:______0_ + x2:_____0__ + x3:____0___
   //              + x4:___0____ + x5:__0_____ + x6:_0______ + x7:0_______
@@ -508,6 +585,55 @@ static inline void pack8_8_32(const uint8_t* __restrict__ in, uint8_t* __restric
   vstpq_u8<0>(out, vldpq_u8<0>(in));
 }
 
+// Load 64 bytes from input at offset n*2..n*2+63, split LSBs/MSBs via transpose,
+// store LSBs to output at offset n, return MSBs for further processing
+template <int n>
+static inline uint8x16x2_t load16_store_lsb_extract_msb(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+  uint8x16x2_t x0A = vldpq_u8<n * 2>(in);
+  uint8x16x2_t x0B = vldpq_u8<n * 2 + 32>(in);
+  uint8x16x2_t x0LSB = vtrn1q_u8_x2(x0A, x0B);
+  vstpq_u8<n>(out, x0LSB);
+  return vtrn2q_u8_x2(x0A, x0B); // MSB
+}
+
+static inline void pack9_16_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+  uint8x16x2_t x0 = load16_store_lsb_extract_msb<0>(in, out);
+  uint8x16x2_t x1 = load16_store_lsb_extract_msb<32>(in, out);
+  x0 = vsliq_n_u8_x2<1>(x0, x1); // x1->x0 (1 bit)
+
+  uint8x16x2_t x2 = load16_store_lsb_extract_msb<64>(in, out);
+  uint8x16x2_t x3 = load16_store_lsb_extract_msb<96>(in, out);
+  x2 = vsliq_n_u8_x2<1>(x2, x3); // x3->x2 (1 bit)
+  x0 = vsliq_n_u8_x2<2>(x0, x2); // x2->x0 (2 bits)
+
+  uint8x16x2_t x4 = load16_store_lsb_extract_msb<128>(in, out);
+  uint8x16x2_t x5 = load16_store_lsb_extract_msb<160>(in, out);
+  x4 = vsliq_n_u8_x2<1>(x4, x5); // x5->x4 (1 bit)
+
+  uint8x16x2_t x6 = load16_store_lsb_extract_msb<192>(in, out);
+  uint8x16x2_t x7 = load16_store_lsb_extract_msb<224>(in, out);
+  x6 = vsliq_n_u8_x2<1>(x6, x7); // x7->x6 (1 bit)
+  x4 = vsliq_n_u8_x2<2>(x4, x6); // x6->x4 (2 bits)
+  x0 = vsliq_n_u8_x2<4>(x0, x4); // x4->x0 (4 bits)
+
+  vstpq_u8<256>(out, x0);
+}
+
+static inline void pack10_16_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
+  // x0:00000000 := x0:______10 + x1:____10__ + x2:__10____ + x3:10______
+  uint8x16x2_t x0 = load16_store_lsb_extract_msb<0>(in, out);
+  uint8x16x2_t x1 = load16_store_lsb_extract_msb<32>(in, out);
+  x0 = vsliq_n_u8_x2<2>(x0, x1); // x1->x0 (2 bits)
+
+  uint8x16x2_t x2 = load16_store_lsb_extract_msb<64>(in, out);
+  uint8x16x2_t x3 = load16_store_lsb_extract_msb<96>(in, out);
+  x2 = vsliq_n_u8_x2<2>(x2, x3); // x3->x2 (2 bits)
+
+  x0 = vsliq_n_u8_x2<4>(x0, x2); // x2->x0 (4 bits)
+
+  vstpq_u8<128>(out, x0);
+}
+
 /* ───────────────────────  kernel drivers  ─────────────────────────────── */
 
 #define PFOR_PRAGMA_STRINGIFY(x) #x
@@ -544,7 +670,7 @@ inline void loop(const uint8_t* __restrict in, uint8_t* __restrict out, std::siz
 using namespace impl;
 
 void pack(const uint8_t* in, uint8_t* out, std::uint32_t bit, std::uint32_t n) {
-  if (bit == 0 || bit > 8)
+  if (bit == 0 || bit > 10)
     return;
 
   switch (bit) {
@@ -572,6 +698,13 @@ void pack(const uint8_t* in, uint8_t* out, std::uint32_t bit, std::uint32_t n) {
   case 8:
     loop<8, 32, 8, pack8_8_32, true>(in, out, n);
     break;
+  case 9:
+    // TODO: investigate loop driver behaviour for k={9,10}. Likely incorrect
+    loop<9, 256, 1, pack9_16_256, true>(in, out, n);
+    break;
+  case 10:
+    loop<10, 256, 1, pack10_16_128, true>(in, out, n);
+    break;
   }
 
   // Memory barrier prevents LLVM's common subexpression elimination,
@@ -580,8 +713,9 @@ void pack(const uint8_t* in, uint8_t* out, std::uint32_t bit, std::uint32_t n) {
 }
 
 void unpack(const uint8_t* in, uint8_t* out, std::uint32_t bit, std::uint32_t n) {
-  if (bit == 0 || bit > 8)
+  if (bit == 0 || bit > 10)
     return;
+
   switch (bit) {
   case 1:
     loop<1, 256, 1, unpack1_8_256, false>(in, out, n);
@@ -606,6 +740,13 @@ void unpack(const uint8_t* in, uint8_t* out, std::uint32_t bit, std::uint32_t n)
     break;
   case 8:
     loop<8, 32, 8, unpack8_8_32, false>(in, out, n);
+    break;
+  case 9:
+    // TODO: investigate loop driver behaviour for k={9,10}. Likely incorrect
+    loop<9, 256, 1, unpack9_16_256, false>(in, out, n);
+    break;
+  case 10:
+    loop<10, 256, 1, unpack10_16_128, false>(in, out, n);
     break;
   }
 

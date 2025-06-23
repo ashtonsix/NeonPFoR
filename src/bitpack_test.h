@@ -54,9 +54,16 @@ struct ImplSpec {
 static inline ImplSpec makeNeonPFoR(uint32_t bits, uint32_t n) {
   ImplSpec s;
   s.name = "neonpfor";
-  s.bitLength = n * 8;
   s.intsPerBlock = n;
-  s.width = 8;
+
+  // k=9,10 use 16-bit input/output, k=1-8 use 8-bit input/output
+  if (bits >= 9) {
+    s.width = 16;
+    s.bitLength = n * 16;
+  } else {
+    s.width = 8;
+    s.bitLength = n * 8;
+  }
 
   s.forward = [bits, n](const uint8_t* in, uint8_t* out) { NeonPForLib::pack(in, out, bits, n); };
   s.inverse = [bits, n](const uint8_t* in, uint8_t* out) { NeonPForLib::unpack(in, out, bits, n); };
@@ -235,7 +242,9 @@ static inline bool checkForErrors(const ImplSpec& s, uint32_t bits) {
   const bool ok = fperm.errors.empty() && iperm.errors.empty() && bijectivityErrors.empty();
 
   if (ok) {
-    std::cout << " passed\n";
+    const int32_t nonZeroCount =
+        std::count_if(fperm.permutation.begin(), fperm.permutation.end(), [](int32_t x) { return x >= 0; });
+    std::cout << " passed (" << nonZeroCount << " bits permuted)\n";
     const auto base = OUT_DIR + "/" + s.name + "_bitpack_permutation_" + std::to_string(bits);
     std::ofstream bf(base + ".bin", std::ios::binary);
     bf.write(reinterpret_cast<const char*>(fperm.permutation.data()), fperm.permutation.size() * sizeof(int32_t));
