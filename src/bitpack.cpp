@@ -160,6 +160,16 @@ static inline void unpack2_8_128(const uint8_t* __restrict__ in, uint8_t* __rest
   vstpq_u8<96>(out, y3);
 }
 
+// TODO: new pattern
+// // y0 := x0:_____210
+// // y1 := x0:__210___
+// // y2 := x0:10______ + x1:_2______
+// // y3 := x1:_____210
+// // y4 := x1:__210___
+// // y5 := x2:10______ + x1:2_______
+// // y6 := x2:_____210
+// // y7 := x2:__210___
+
 static inline void unpack3_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // y0 := x0:_____210
   // y1 := x0:__210___
@@ -260,6 +270,12 @@ static inline void unpack5_8_256(const uint8_t* __restrict__ in, uint8_t* __rest
   vstpq_u8<224>(out, y7);
 }
 
+// TODO: new pattern
+// // y0 := x0:__543210
+// // y1 := x0:54______ + x1:____3210
+// // y2 := x2:54______ + x1:3210____
+// // y3 := x2:__543210
+
 static inline void unpack6_8_128(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // y0 := x0:__543210
   // y1 := x0:54______ + x2:____3210
@@ -286,6 +302,16 @@ static inline void unpack6_8_128(const uint8_t* __restrict__ in, uint8_t* __rest
   y3 = vsriq_n_u8_x2<4>(y3, x2);          // x2->y3 (4 bits)
   vstpq_u8<96>(out, y3);
 }
+
+// TODO: new pattern
+// // y0 := x0:_6543210
+// // y1 := x0:6_______ + x1:__543210
+// // y2 := x2:6_______ + x1:54______ + x3:____3210
+// // y3 := x2:_6543210
+// // y4 := x4:_6543210
+// // y5 := x4:6_______ + x5:__543210
+// // y6 := x6:6_______ + x5:54______ + x3:3210____
+// // y7 := x6:_6543210
 
 static inline void unpack7_8_256(const uint8_t* __restrict__ in, uint8_t* __restrict__ out) {
   // y0 := x0:_6543210
