@@ -3,7 +3,7 @@
 
 #include "../vendor/fastpfor-bitpack.h"
 #include "bitpack.h"
-#include "test_common.h"
+#include "common_test.h"
 
 #include <cstdint>
 #include <fstream>
@@ -51,22 +51,29 @@ struct ImplSpec {
 // ──────────────────────────────────────────────────────────────────────────────
 // Factories
 // ──────────────────────────────────────────────────────────────────────────────
-static inline ImplSpec makeNeonPFoR(uint32_t bits, uint32_t n) {
+static inline ImplSpec makeNeonPFoR(uint32_t bitsPacked, uint32_t n) {
   ImplSpec s;
   s.name = "neonpfor";
   s.intsPerBlock = n;
 
-  // k=9,10 use 16-bit input/output, k=1-8 use 8-bit input/output
-  if (bits >= 9) {
+  uint32_t bitsUnpacked;
+
+  if (bitsPacked > 8) {
+    bitsUnpacked = 16;
     s.width = 16;
     s.bitLength = n * 16;
   } else {
+    bitsUnpacked = 8;
     s.width = 8;
     s.bitLength = n * 8;
   }
 
-  s.forward = [bits, n](const uint8_t* in, uint8_t* out) { NeonPForLib::pack(in, out, bits, n); };
-  s.inverse = [bits, n](const uint8_t* in, uint8_t* out) { NeonPForLib::unpack(in, out, bits, n); };
+  s.forward = [bitsUnpacked, bitsPacked, n](const uint8_t* in, uint8_t* out) {
+    NeonPForLib::pack(in, out, bitsUnpacked, bitsPacked, n);
+  };
+  s.inverse = [bitsUnpacked, bitsPacked, n](const uint8_t* in, uint8_t* out) {
+    NeonPForLib::unpack(in, out, bitsUnpacked, bitsPacked, n);
+  };
 
   return s;
 }
@@ -241,21 +248,33 @@ static inline bool checkForErrors(const ImplSpec& s, uint32_t bits) {
 
   const bool ok = fperm.errors.empty() && iperm.errors.empty() && bijectivityErrors.empty();
 
+  const int32_t fNonZeroCount = std::count_if(fperm.permutation.begin(), fperm.permutation.end(), [](int32_t x) {
+    return x >= 0;
+  });
+  const int32_t iNonZeroCount = std::count_if(iperm.permutation.begin(), iperm.permutation.end(), [](int32_t x) {
+    return x >= 0;
+  });
   if (ok) {
-    const int32_t nonZeroCount =
-        std::count_if(fperm.permutation.begin(), fperm.permutation.end(), [](int32_t x) { return x >= 0; });
-    std::cout << " passed (" << nonZeroCount << " bits permuted)\n";
+    std::cout << " passed (" << fNonZeroCount << " bits permuted)\n";
     const auto base = OUT_DIR + "/" + s.name + "_bitpack_permutation_" + std::to_string(bits);
     std::ofstream bf(base + ".bin", std::ios::binary);
     bf.write(reinterpret_cast<const char*>(fperm.permutation.data()), fperm.permutation.size() * sizeof(int32_t));
   } else {
-    std::cout << '\n';
-    for (auto&& e : fperm.errors)
-      std::cout << "  Forward error: " << e.message << '\n';
-    for (auto&& e : iperm.errors)
-      std::cout << "  Inverse error: " << e.message << '\n';
-    for (auto&& e : bijectivityErrors)
-      std::cout << "  Bijectivity error: " << e.message << '\n';
+    std::cout << " failed (" << fNonZeroCount << " and " << iNonZeroCount
+              << " bits permuted by forward and inverse pass respectively)\n";
+    size_t max_err_count = 20;
+    for (size_t i = 0; i < std::min(size_t(max_err_count), fperm.errors.size()); ++i)
+      std::cout << "  Forward error: " << fperm.errors[i].message << '\n';
+    if (fperm.errors.size() > max_err_count)
+      std::cout << "  ..." << (fperm.errors.size() - max_err_count) << " errors not shown\n";
+    for (size_t i = 0; i < std::min(size_t(max_err_count), iperm.errors.size()); ++i)
+      std::cout << "  Inverse error: " << iperm.errors[i].message << '\n';
+    if (iperm.errors.size() > max_err_count)
+      std::cout << "  ..." << (iperm.errors.size() - max_err_count) << " errors not shown\n";
+    for (size_t i = 0; i < std::min(size_t(max_err_count), bijectivityErrors.size()); ++i)
+      std::cout << "  Bijectivity error: " << bijectivityErrors[i].message << '\n';
+    if (bijectivityErrors.size() > max_err_count)
+      std::cout << "  ..." << (bijectivityErrors.size() - max_err_count) << " errors not shown\n";
   }
 
   return ok;

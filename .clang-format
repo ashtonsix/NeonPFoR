@@ -63,8 +63,8 @@ IncludeBlocks: Preserve
 # Comment settings
 ReflowComments: true
 # Short constructs
-AllowShortCaseLabelsOnASingleLine: false
-AllowShortLambdasOnASingleLine: All
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortLambdasOnASingleLine: false
 # C++11 features
 Cpp11BracedListStyle: true
 # Empty line settings

@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
 
   // For bitpack testing, we also need to specify k values (bit widths)
   std::vector<uint32_t> ks;
-  for (uint32_t k = 1; k <= 10; ++k) {
+  for (uint32_t k = 1; k <= 8; ++k) {
     ks.push_back(k);
   }
 

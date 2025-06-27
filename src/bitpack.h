@@ -16,8 +16,8 @@
 
 namespace NeonPForLib {
 
-void pack(const uint8_t* __restrict__ in, uint8_t* __restrict__ out, uint32_t bit, uint32_t n);
-void unpack(const uint8_t* __restrict__ in, uint8_t* __restrict__ out, uint32_t bit, uint32_t n);
+void pack(const uint8_t* __restrict__ in, uint8_t* __restrict__ out, uint32_t k_in, uint32_t k_out, uint32_t n);
+void unpack(const uint8_t* __restrict__ in, uint8_t* __restrict__ out, uint32_t k_in, uint32_t k_out, uint32_t n);
 
 } // namespace NeonPForLib
 

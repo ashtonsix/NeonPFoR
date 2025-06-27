@@ -3,8 +3,8 @@
 
 #include "../vendor/fastpfor-delta.h"
 #include "../vendor/naive-delta.h"
+#include "common_test.h"
 #include "delta.h"
-#include "test_common.h"
 
 #include <cstdint>
 #include <fstream>
@@ -40,30 +40,54 @@ struct DeltaSpec {
 static inline DeltaSpec makeNeonPFoRDelta() {
   DeltaSpec s;
   s.name = "neonpfor";
-  s.encodeDelta1 = [](uint32_t* data, size_t n) { NeonPForLib::Delta::encodeDelta1_32(data, n); };
-  s.decodeDelta1 = [](uint32_t* data, size_t n) { NeonPForLib::Delta::decodeDelta1_32(data, n); };
-  s.encodeDelta4 = [](uint32_t* data, size_t n) { NeonPForLib::Delta::encodeDelta4_32(data, n); };
-  s.decodeDelta4 = [](uint32_t* data, size_t n) { NeonPForLib::Delta::decodeDelta4_32(data, n); };
+  s.encodeDelta1 = [](uint32_t* data, size_t n) {
+    NeonPForLib::Delta::encodeDelta1_32(data, n);
+  };
+  s.decodeDelta1 = [](uint32_t* data, size_t n) {
+    NeonPForLib::Delta::decodeDelta1_32(data, n);
+  };
+  s.encodeDelta4 = [](uint32_t* data, size_t n) {
+    NeonPForLib::Delta::encodeDelta4_32(data, n);
+  };
+  s.decodeDelta4 = [](uint32_t* data, size_t n) {
+    NeonPForLib::Delta::decodeDelta4_32(data, n);
+  };
   return s;
 }
 
 static inline DeltaSpec makeFastPFoRDelta() {
   DeltaSpec s;
   s.name = "fastpfor";
-  s.encodeDelta1 = [](uint32_t* data, size_t n) { FastPForLib::Delta::encodeDelta1_32(data, n); };
-  s.decodeDelta1 = [](uint32_t* data, size_t n) { FastPForLib::Delta::decodeDelta1_32(data, n); };
-  s.encodeDelta4 = [](uint32_t* data, size_t n) { FastPForLib::Delta::encodeDelta4_32(data, n); };
-  s.decodeDelta4 = [](uint32_t* data, size_t n) { FastPForLib::Delta::decodeDelta4_32(data, n); };
+  s.encodeDelta1 = [](uint32_t* data, size_t n) {
+    FastPForLib::Delta::encodeDelta1_32(data, n);
+  };
+  s.decodeDelta1 = [](uint32_t* data, size_t n) {
+    FastPForLib::Delta::decodeDelta1_32(data, n);
+  };
+  s.encodeDelta4 = [](uint32_t* data, size_t n) {
+    FastPForLib::Delta::encodeDelta4_32(data, n);
+  };
+  s.decodeDelta4 = [](uint32_t* data, size_t n) {
+    FastPForLib::Delta::decodeDelta4_32(data, n);
+  };
   return s;
 }
 
 static inline DeltaSpec makeNaiveDelta() {
   DeltaSpec s;
   s.name = "naive";
-  s.encodeDelta1 = [](uint32_t* data, size_t n) { NaiveDeltaLib::Delta::encodeDelta1_32(data, n); };
-  s.decodeDelta1 = [](uint32_t* data, size_t n) { NaiveDeltaLib::Delta::decodeDelta1_32(data, n); };
-  s.encodeDelta4 = [](uint32_t* data, size_t n) { NaiveDeltaLib::Delta::encodeDelta4_32(data, n); };
-  s.decodeDelta4 = [](uint32_t* data, size_t n) { NaiveDeltaLib::Delta::decodeDelta4_32(data, n); };
+  s.encodeDelta1 = [](uint32_t* data, size_t n) {
+    NaiveDeltaLib::Delta::encodeDelta1_32(data, n);
+  };
+  s.decodeDelta1 = [](uint32_t* data, size_t n) {
+    NaiveDeltaLib::Delta::decodeDelta1_32(data, n);
+  };
+  s.encodeDelta4 = [](uint32_t* data, size_t n) {
+    NaiveDeltaLib::Delta::encodeDelta4_32(data, n);
+  };
+  s.decodeDelta4 = [](uint32_t* data, size_t n) {
+    NaiveDeltaLib::Delta::decodeDelta4_32(data, n);
+  };
   return s;
 }
 

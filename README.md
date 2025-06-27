@@ -13,6 +13,7 @@ Tested on freshly provisioned ARM Ubuntu 24 instance (AWS m8g.large). Might not 
    ```
 
    This script will install:
+
    - Build tools (gcc, cmake, ninja, etc.)
    - Clang/LLVM 19 toolchain
    - SIMDe library for cross-platform SIMD
@@ -59,21 +60,21 @@ bench fastpfor unpack (k=6→32) :  13114.3 M int/s,  9.836 GB/s in, 52.457 GB/s
 bench fastpfor unpack (k=7→32) :  12313.7 M int/s, 10.774 GB/s in, 49.255 GB/s out
 bench fastpfor unpack (k=8→32) :  14104.3 M int/s, 14.104 GB/s in, 56.417 GB/s out
 
-bench neonpfor pack   (k=8→1)  :  80259.0 M int/s, 80.259 GB/s in, 10.032 GB/s out
-bench neonpfor pack   (k=8→2)  :  79545.0 M int/s, 79.545 GB/s in, 19.886 GB/s out
-bench neonpfor pack   (k=8→3)  :  68933.6 M int/s, 68.934 GB/s in, 25.850 GB/s out
-bench neonpfor pack   (k=8→4)  :  87159.3 M int/s, 87.159 GB/s in, 43.580 GB/s out
-bench neonpfor pack   (k=8→5)  :  59482.8 M int/s, 59.483 GB/s in, 37.177 GB/s out
-bench neonpfor pack   (k=8→6)  :  59704.5 M int/s, 59.705 GB/s in, 44.778 GB/s out
-bench neonpfor pack   (k=8→7)  :  53837.4 M int/s, 53.837 GB/s in, 47.108 GB/s out
-bench neonpfor pack   (k=8→8)  :  72358.9 M int/s, 72.359 GB/s in, 72.359 GB/s out
+bench neonpfor pack   (k=8→1)  :  80866.4 M int/s, 80.866 GB/s in, 10.108 GB/s out
+bench neonpfor pack   (k=8→2)  :  96123.8 M int/s, 96.124 GB/s in, 24.031 GB/s out
+bench neonpfor pack   (k=8→3)  :  82669.5 M int/s, 82.669 GB/s in, 31.001 GB/s out
+bench neonpfor pack   (k=8→4)  :  87948.9 M int/s, 87.949 GB/s in, 43.974 GB/s out
+bench neonpfor pack   (k=8→5)  :  60202.8 M int/s, 60.203 GB/s in, 37.627 GB/s out
+bench neonpfor pack   (k=8→6)  :  58739.7 M int/s, 58.740 GB/s in, 44.055 GB/s out
+bench neonpfor pack   (k=8→7)  :  53785.6 M int/s, 53.786 GB/s in, 47.062 GB/s out
+bench neonpfor pack   (k=8→8)  :  73735.8 M int/s, 73.736 GB/s in, 73.736 GB/s out
 
-bench neonpfor unpack (k=1→8)  :  64252.3 M int/s,  8.032 GB/s in, 64.252 GB/s out
-bench neonpfor unpack (k=2→8)  :  62821.4 M int/s, 15.705 GB/s in, 62.821 GB/s out
-bench neonpfor unpack (k=3→8)  :  54753.1 M int/s, 20.532 GB/s in, 54.753 GB/s out
-bench neonpfor unpack (k=4→8)  :  66936.0 M int/s, 33.468 GB/s in, 66.936 GB/s out
-bench neonpfor unpack (k=5→8)  :  58039.4 M int/s, 36.275 GB/s in, 58.039 GB/s out
-bench neonpfor unpack (k=6→8)  :  54134.0 M int/s, 40.601 GB/s in, 54.134 GB/s out
-bench neonpfor unpack (k=7→8)  :  48989.6 M int/s, 42.866 GB/s in, 48.990 GB/s out
-bench neonpfor unpack (k=8→8)  :  72384.4 M int/s, 72.384 GB/s in, 72.384 GB/s out
+bench neonpfor unpack (k=1→8)  :  64991.5 M int/s,  8.124 GB/s in, 64.992 GB/s out
+bench neonpfor unpack (k=2→8)  :  50427.1 M int/s, 12.607 GB/s in, 50.427 GB/s out
+bench neonpfor unpack (k=3→8)  :  59433.5 M int/s, 22.288 GB/s in, 59.434 GB/s out
+bench neonpfor unpack (k=4→8)  :  64370.6 M int/s, 32.185 GB/s in, 64.371 GB/s out
+bench neonpfor unpack (k=5→8)  :  52209.2 M int/s, 32.631 GB/s in, 52.209 GB/s out
+bench neonpfor unpack (k=6→8)  :  52814.0 M int/s, 39.610 GB/s in, 52.814 GB/s out
+bench neonpfor unpack (k=7→8)  :  52180.7 M int/s, 45.658 GB/s in, 52.181 GB/s out
+bench neonpfor unpack (k=8→8)  :  73742.2 M int/s, 73.742 GB/s in, 73.742 GB/s out
 ```
