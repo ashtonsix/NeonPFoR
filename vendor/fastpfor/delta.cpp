@@ -5,7 +5,7 @@
  * (c) Daniel Lemire and Leonid Boytsov, modified by Ashton Six
  */
 
-#include "fastpfor-delta.h"
+#include "delta.h"
 
 namespace FastPForLib {
 

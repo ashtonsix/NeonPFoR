@@ -4,7 +4,7 @@
  *
  * (c) Daniel Lemire, modified by Ashton Six
  */
-#include "fastpfor-bitpack.h"
+#include "bitpack.h"
 
 namespace FastPForLib {
 
@@ -9000,140 +9000,73 @@ static void __SIMD_fastunpack32_32(const __m128i* __restrict__ in, uint32_t* __r
 void simdunpack(const __m128i* __restrict__ in, uint32_t* __restrict__ out, const uint32_t bit) {
   using namespace simd;
   switch (bit) {
-  case 0:
-    SIMD_nullunpacker32(in, out);
-    return;
+  case 0: SIMD_nullunpacker32(in, out); return;
 
-  case 1:
-    __SIMD_fastunpack1_32(in, out);
-    return;
+  case 1: __SIMD_fastunpack1_32(in, out); return;
 
-  case 2:
-    __SIMD_fastunpack2_32(in, out);
-    return;
+  case 2: __SIMD_fastunpack2_32(in, out); return;
 
-  case 3:
-    __SIMD_fastunpack3_32(in, out);
-    return;
+  case 3: __SIMD_fastunpack3_32(in, out); return;
 
-  case 4:
-    __SIMD_fastunpack4_32(in, out);
-    return;
+  case 4: __SIMD_fastunpack4_32(in, out); return;
 
-  case 5:
-    __SIMD_fastunpack5_32(in, out);
-    return;
+  case 5: __SIMD_fastunpack5_32(in, out); return;
 
-  case 6:
-    __SIMD_fastunpack6_32(in, out);
-    return;
+  case 6: __SIMD_fastunpack6_32(in, out); return;
 
-  case 7:
-    __SIMD_fastunpack7_32(in, out);
-    return;
+  case 7: __SIMD_fastunpack7_32(in, out); return;
 
-  case 8:
-    __SIMD_fastunpack8_32(in, out);
-    return;
+  case 8: __SIMD_fastunpack8_32(in, out); return;
 
-  case 9:
-    __SIMD_fastunpack9_32(in, out);
-    return;
+  case 9: __SIMD_fastunpack9_32(in, out); return;
 
-  case 10:
-    __SIMD_fastunpack10_32(in, out);
-    return;
+  case 10: __SIMD_fastunpack10_32(in, out); return;
 
-  case 11:
-    __SIMD_fastunpack11_32(in, out);
-    return;
+  case 11: __SIMD_fastunpack11_32(in, out); return;
 
-  case 12:
-    __SIMD_fastunpack12_32(in, out);
-    return;
+  case 12: __SIMD_fastunpack12_32(in, out); return;
 
-  case 13:
-    __SIMD_fastunpack13_32(in, out);
-    return;
+  case 13: __SIMD_fastunpack13_32(in, out); return;
 
-  case 14:
-    __SIMD_fastunpack14_32(in, out);
-    return;
+  case 14: __SIMD_fastunpack14_32(in, out); return;
 
-  case 15:
-    __SIMD_fastunpack15_32(in, out);
-    return;
+  case 15: __SIMD_fastunpack15_32(in, out); return;
 
-  case 16:
-    __SIMD_fastunpack16_32(in, out);
-    return;
+  case 16: __SIMD_fastunpack16_32(in, out); return;
 
-  case 17:
-    __SIMD_fastunpack17_32(in, out);
-    return;
+  case 17: __SIMD_fastunpack17_32(in, out); return;
 
-  case 18:
-    __SIMD_fastunpack18_32(in, out);
-    return;
+  case 18: __SIMD_fastunpack18_32(in, out); return;
 
-  case 19:
-    __SIMD_fastunpack19_32(in, out);
-    return;
+  case 19: __SIMD_fastunpack19_32(in, out); return;
 
-  case 20:
-    __SIMD_fastunpack20_32(in, out);
-    return;
+  case 20: __SIMD_fastunpack20_32(in, out); return;
 
-  case 21:
-    __SIMD_fastunpack21_32(in, out);
-    return;
+  case 21: __SIMD_fastunpack21_32(in, out); return;
 
-  case 22:
-    __SIMD_fastunpack22_32(in, out);
-    return;
+  case 22: __SIMD_fastunpack22_32(in, out); return;
 
-  case 23:
-    __SIMD_fastunpack23_32(in, out);
-    return;
+  case 23: __SIMD_fastunpack23_32(in, out); return;
 
-  case 24:
-    __SIMD_fastunpack24_32(in, out);
-    return;
+  case 24: __SIMD_fastunpack24_32(in, out); return;
 
-  case 25:
-    __SIMD_fastunpack25_32(in, out);
-    return;
+  case 25: __SIMD_fastunpack25_32(in, out); return;
 
-  case 26:
-    __SIMD_fastunpack26_32(in, out);
-    return;
+  case 26: __SIMD_fastunpack26_32(in, out); return;
 
-  case 27:
-    __SIMD_fastunpack27_32(in, out);
-    return;
+  case 27: __SIMD_fastunpack27_32(in, out); return;
 
-  case 28:
-    __SIMD_fastunpack28_32(in, out);
-    return;
+  case 28: __SIMD_fastunpack28_32(in, out); return;
 
-  case 29:
-    __SIMD_fastunpack29_32(in, out);
-    return;
+  case 29: __SIMD_fastunpack29_32(in, out); return;
 
-  case 30:
-    __SIMD_fastunpack30_32(in, out);
-    return;
+  case 30: __SIMD_fastunpack30_32(in, out); return;
 
-  case 31:
-    __SIMD_fastunpack31_32(in, out);
-    return;
+  case 31: __SIMD_fastunpack31_32(in, out); return;
 
-  case 32:
-    __SIMD_fastunpack32_32(in, out);
-    return;
+  case 32: __SIMD_fastunpack32_32(in, out); return;
 
-  default:
-    break;
+  default: break;
   }
   throw std::logic_error("number of bits is unsupported");
 }
@@ -9142,139 +9075,73 @@ void simdunpack(const __m128i* __restrict__ in, uint32_t* __restrict__ out, cons
 void simdpack(const uint32_t* __restrict__ in, __m128i* __restrict__ out, const uint32_t bit) {
   using namespace simd;
   switch (bit) {
-  case 0:
-    return;
+  case 0: return;
 
-  case 1:
-    __SIMD_fastpack1_32(in, out);
-    return;
+  case 1: __SIMD_fastpack1_32(in, out); return;
 
-  case 2:
-    __SIMD_fastpack2_32(in, out);
-    return;
+  case 2: __SIMD_fastpack2_32(in, out); return;
 
-  case 3:
-    __SIMD_fastpack3_32(in, out);
-    return;
+  case 3: __SIMD_fastpack3_32(in, out); return;
 
-  case 4:
-    __SIMD_fastpack4_32(in, out);
-    return;
+  case 4: __SIMD_fastpack4_32(in, out); return;
 
-  case 5:
-    __SIMD_fastpack5_32(in, out);
-    return;
+  case 5: __SIMD_fastpack5_32(in, out); return;
 
-  case 6:
-    __SIMD_fastpack6_32(in, out);
-    return;
+  case 6: __SIMD_fastpack6_32(in, out); return;
 
-  case 7:
-    __SIMD_fastpack7_32(in, out);
-    return;
+  case 7: __SIMD_fastpack7_32(in, out); return;
 
-  case 8:
-    __SIMD_fastpack8_32(in, out);
-    return;
+  case 8: __SIMD_fastpack8_32(in, out); return;
 
-  case 9:
-    __SIMD_fastpack9_32(in, out);
-    return;
+  case 9: __SIMD_fastpack9_32(in, out); return;
 
-  case 10:
-    __SIMD_fastpack10_32(in, out);
-    return;
+  case 10: __SIMD_fastpack10_32(in, out); return;
 
-  case 11:
-    __SIMD_fastpack11_32(in, out);
-    return;
+  case 11: __SIMD_fastpack11_32(in, out); return;
 
-  case 12:
-    __SIMD_fastpack12_32(in, out);
-    return;
+  case 12: __SIMD_fastpack12_32(in, out); return;
 
-  case 13:
-    __SIMD_fastpack13_32(in, out);
-    return;
+  case 13: __SIMD_fastpack13_32(in, out); return;
 
-  case 14:
-    __SIMD_fastpack14_32(in, out);
-    return;
+  case 14: __SIMD_fastpack14_32(in, out); return;
 
-  case 15:
-    __SIMD_fastpack15_32(in, out);
-    return;
+  case 15: __SIMD_fastpack15_32(in, out); return;
 
-  case 16:
-    __SIMD_fastpack16_32(in, out);
-    return;
+  case 16: __SIMD_fastpack16_32(in, out); return;
 
-  case 17:
-    __SIMD_fastpack17_32(in, out);
-    return;
+  case 17: __SIMD_fastpack17_32(in, out); return;
 
-  case 18:
-    __SIMD_fastpack18_32(in, out);
-    return;
+  case 18: __SIMD_fastpack18_32(in, out); return;
 
-  case 19:
-    __SIMD_fastpack19_32(in, out);
-    return;
+  case 19: __SIMD_fastpack19_32(in, out); return;
 
-  case 20:
-    __SIMD_fastpack20_32(in, out);
-    return;
+  case 20: __SIMD_fastpack20_32(in, out); return;
 
-  case 21:
-    __SIMD_fastpack21_32(in, out);
-    return;
+  case 21: __SIMD_fastpack21_32(in, out); return;
 
-  case 22:
-    __SIMD_fastpack22_32(in, out);
-    return;
+  case 22: __SIMD_fastpack22_32(in, out); return;
 
-  case 23:
-    __SIMD_fastpack23_32(in, out);
-    return;
+  case 23: __SIMD_fastpack23_32(in, out); return;
 
-  case 24:
-    __SIMD_fastpack24_32(in, out);
-    return;
+  case 24: __SIMD_fastpack24_32(in, out); return;
 
-  case 25:
-    __SIMD_fastpack25_32(in, out);
-    return;
+  case 25: __SIMD_fastpack25_32(in, out); return;
 
-  case 26:
-    __SIMD_fastpack26_32(in, out);
-    return;
+  case 26: __SIMD_fastpack26_32(in, out); return;
 
-  case 27:
-    __SIMD_fastpack27_32(in, out);
-    return;
+  case 27: __SIMD_fastpack27_32(in, out); return;
 
-  case 28:
-    __SIMD_fastpack28_32(in, out);
-    return;
+  case 28: __SIMD_fastpack28_32(in, out); return;
 
-  case 29:
-    __SIMD_fastpack29_32(in, out);
-    return;
+  case 29: __SIMD_fastpack29_32(in, out); return;
 
-  case 30:
-    __SIMD_fastpack30_32(in, out);
-    return;
+  case 30: __SIMD_fastpack30_32(in, out); return;
 
-  case 31:
-    __SIMD_fastpack31_32(in, out);
-    return;
+  case 31: __SIMD_fastpack31_32(in, out); return;
 
-  case 32:
-    __SIMD_fastpack32_32(in, out);
-    return;
+  case 32: __SIMD_fastpack32_32(in, out); return;
 
-  default:
-    break;
+  default: break;
   }
   throw std::logic_error("number of bits is unsupported");
 }

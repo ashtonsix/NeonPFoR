@@ -1,8 +1,8 @@
 #ifndef NEON_PFOR_BITPACK_TEST_H_
 #define NEON_PFOR_BITPACK_TEST_H_
 
-#include "../vendor/fastpfor-bitpack.h"
-#include "bitpack.h"
+#include "../src/bitpack.h"
+#include "../vendor/fastpfor/bitpack.h"
 #include "common_test.h"
 
 #include <cstdint>

@@ -1,10 +1,10 @@
 #ifndef NEON_PFOR_DELTA_TEST_H_
 #define NEON_PFOR_DELTA_TEST_H_
 
-#include "../vendor/fastpfor-delta.h"
-#include "../vendor/naive-delta.h"
+#include "../src/delta.h"
+#include "../vendor/fastpfor/delta.h"
+#include "../vendor/naive/delta.h"
 #include "common_test.h"
-#include "delta.h"
 
 #include <cstdint>
 #include <fstream>

@@ -4,7 +4,7 @@
  * outperforms FastPFoR's SIMD implementation
  */
 
-#include "naive-delta.h"
+#include "delta.h"
 
 namespace NaiveDeltaLib {
 

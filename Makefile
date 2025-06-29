@@ -18,29 +18,33 @@ MCA_FLAGS = -mcpu=neoverse-v2 \
 	-all-stats
 
 BUILD_DIR = build
-ALL_SRCS = $(wildcard vendor/*.cpp) $(filter-out %/main.cpp, $(wildcard src/*.cpp))
-MAIN_SRC = src/main.cpp
+VENDOR_SRCS = $(wildcard vendor/*/*.cpp)
+SRC_SRCS = $(wildcard src/*.cpp)
+MAIN_SRC = test/main.cpp
+ALL_SRCS = $(VENDOR_SRCS) $(SRC_SRCS)
 
-ALL_OBJS = $(ALL_SRCS:vendor/%.cpp=$(BUILD_DIR)/%.o)
-ALL_OBJS := $(ALL_OBJS:src/%.cpp=$(BUILD_DIR)/%.o)
-MAIN_OBJ = $(BUILD_DIR)/main.o
+# Generate object file names preserving directory structure to avoid conflicts
+VENDOR_OBJS = $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(VENDOR_SRCS))
+SRC_OBJS = $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SRC_SRCS))
+ALL_OBJS = $(VENDOR_OBJS) $(SRC_OBJS)
+MAIN_OBJ = $(BUILD_DIR)/test/main.o
 EXECUTABLE = $(BUILD_DIR)/inspect
-ASM_FILES = $(ALL_SRCS:vendor/%.cpp=$(BUILD_DIR)/%.s)
-ASM_FILES := $(ASM_FILES:src/%.cpp=$(BUILD_DIR)/%.s)
+
+ASM_FILES = $(patsubst %.cpp,$(BUILD_DIR)/%.s,$(VENDOR_SRCS)) $(patsubst %.cpp,$(BUILD_DIR)/%.s,$(SRC_SRCS))
 MCA_FILES = $(ASM_FILES:.s=.mca)
 
 all: clean $(EXECUTABLE) asm # mca
 
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR) data
+	mkdir -p $(BUILD_DIR) $(BUILD_DIR)/vendor/fastpfor $(BUILD_DIR)/vendor/naive $(BUILD_DIR)/src $(BUILD_DIR)/test data
 
-$(BUILD_DIR)/%.o: vendor/%.cpp | $(BUILD_DIR)
+$(BUILD_DIR)/vendor/%.o: vendor/%.cpp | $(BUILD_DIR)
 	clang++ $(CXXFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/%.o: src/%.cpp | $(BUILD_DIR)
+$(BUILD_DIR)/src/%.o: src/%.cpp | $(BUILD_DIR)
 	clang++ $(CXXFLAGS) -c $< -o $@
 
-$(MAIN_OBJ): $(MAIN_SRC) | $(BUILD_DIR)
+$(BUILD_DIR)/test/%.o: test/%.cpp | $(BUILD_DIR)
 	clang++ $(CXXFLAGS) -c $< -o $@
 
 $(EXECUTABLE): $(ALL_OBJS) $(MAIN_OBJ)
@@ -49,10 +53,13 @@ $(EXECUTABLE): $(ALL_OBJS) $(MAIN_OBJ)
 asm: $(ASM_FILES)
 	sed -i '/^[ \t]*\/\/APP$$/d; /^[ \t]*\/\/NO_APP$$/d' $^
 
-$(BUILD_DIR)/%.s: vendor/%.cpp | $(BUILD_DIR)
+$(BUILD_DIR)/vendor/%.s: vendor/%.cpp | $(BUILD_DIR)
 	clang++ $(CXXFLAGS) $(ASM_FLAGS) -S $< -o $@
 
-$(BUILD_DIR)/%.s: src/%.cpp | $(BUILD_DIR)
+$(BUILD_DIR)/src/%.s: src/%.cpp | $(BUILD_DIR)
+	clang++ $(CXXFLAGS) $(ASM_FLAGS) -S $< -o $@
+
+$(BUILD_DIR)/test/%.s: test/%.cpp | $(BUILD_DIR)
 	clang++ $(CXXFLAGS) $(ASM_FLAGS) -S $< -o $@
 
 # TODO: split each asm file into pieces, and generate MCA per-piece
