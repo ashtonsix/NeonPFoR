@@ -1,5 +1,6 @@
 # NeonPFoR
 
+> ⚠️ This is a RESEARCH PREVIEW. The API and internal format are not yet stable, and the library is not recommended for production use yet. x86 is not yet supported.
 > Alternative to FastPFoR, tailored for ARM NEON
 
 ## Prerequisites

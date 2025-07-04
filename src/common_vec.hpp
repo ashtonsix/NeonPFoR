@@ -118,12 +118,26 @@ static inline uint8x16x2_t vbifq_n_u8_x2(uint8x16x2_t a, uint8x16x2_t b, uint8x1
   return a;
 }
 
-// static inline uint8x16x2_t vxtnq_u8_x2(uint8x16x2_t a, uint8x16x2_t b) {
-//   uint8x16x2_t result;
-//   result.val[0] = vtrn1q_u8(a.val[0], b.val[0]);
-//   result.val[1] = vtrn1q_u8(a.val[1], b.val[1]);
-//   return result;
-// }
+static inline uint8x16x2_t vxtnq_u16_x2(uint8x16x2_t a, uint8x16x2_t b) {
+  uint8x16x2_t result;
+  result.val[0] = vmovn_high_u16(vmovn_u16(a.val[0]), a.val[1]);
+  result.val[1] = vmovn_high_u16(vmovn_u16(b.val[0]), b.val[1]);
+  return result;
+}
+
+static inline uint8x16x2_t vxtnq_u32_x2(uint8x16x2_t a, uint8x16x2_t b) {
+  uint8x16x2_t result;
+  result.val[0] = vmovn_high_u32(vmovn_u32(a.val[0]), a.val[1]);
+  result.val[1] = vmovn_high_u32(vmovn_u32(b.val[0]), b.val[1]);
+  return result;
+}
+
+static inline uint8x16x2_t vxtnq_u64_x2(uint8x16x2_t a, uint8x16x2_t b) {
+  uint8x16x2_t result;
+  result.val[0] = vmovn_high_u64(vmovn_u64(a.val[0]), a.val[1]);
+  result.val[1] = vmovn_high_u64(vmovn_u64(b.val[0]), b.val[1]);
+  return result;
+}
 
 static inline uint8x16x2_t vtrn1q_u8_x2(uint8x16x2_t a, uint8x16x2_t b) {
   uint8x16x2_t result;
@@ -136,6 +150,34 @@ static inline uint8x16x2_t vtrn2q_u8_x2(uint8x16x2_t a, uint8x16x2_t b) {
   uint8x16x2_t result;
   result.val[0] = vtrn2q_u8(a.val[0], b.val[0]);
   result.val[1] = vtrn2q_u8(a.val[1], b.val[1]);
+  return result;
+}
+
+static inline uint8x16x2_t vtrn1q_u16_x2(uint8x16x2_t a, uint8x16x2_t b) {
+  uint8x16x2_t result;
+  result.val[0] = vtrn1q_u16(a.val[0], b.val[0]);
+  result.val[1] = vtrn1q_u16(a.val[1], b.val[1]);
+  return result;
+}
+
+static inline uint8x16x2_t vtrn2q_u16_x2(uint8x16x2_t a, uint8x16x2_t b) {
+  uint8x16x2_t result;
+  result.val[0] = vtrn2q_u16(a.val[0], b.val[0]);
+  result.val[1] = vtrn2q_u16(a.val[1], b.val[1]);
+  return result;
+}
+
+static inline uint8x16x2_t vtrn1q_u32_x2(uint8x16x2_t a, uint8x16x2_t b) {
+  uint8x16x2_t result;
+  result.val[0] = vtrn1q_u32(a.val[0], b.val[0]);
+  result.val[1] = vtrn1q_u32(a.val[1], b.val[1]);
+  return result;
+}
+
+static inline uint8x16x2_t vtrn2q_u32_x2(uint8x16x2_t a, uint8x16x2_t b) {
+  uint8x16x2_t result;
+  result.val[0] = vtrn2q_u32(a.val[0], b.val[0]);
+  result.val[1] = vtrn2q_u32(a.val[1], b.val[1]);
   return result;
 }
 

@@ -1,19 +1,14 @@
 #pragma once
-#include "common_vec.hpp"
+#include <arm_neon.h>
+#include <array>
 #include <cassert>
 #include <cstddef>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
-using namespace VecNeon;
-
 namespace CommonPipeline {
-
-template <class...>
-inline constexpr bool dependent_false_v = false;
-
-// branch‑free, non‑recursive compile‑time switch (2a + 2b)
+// branch‑free, non‑recursive compile‑time switch
 template <std::size_t I, class... Fs>
 decltype(auto) static_switch(Fs&&... fs) {
   static_assert(I < sizeof...(Fs), "static_switch: index out of bounds");
@@ -70,110 +65,182 @@ struct CallCheckImpl<N, /*Enabled=*/false> {
 template <int N>
 using CallCheck = CallCheckImpl<N, kEnableCallCheck>;
 
-// -------------------------------------------------------------------------------------------------
-//  Common context (I/O base pointers)
-// -------------------------------------------------------------------------------------------------
-
 struct CommonCtx {
   const uint8_t* in;
   uint8_t* out;
 };
 
-// -------------------------------------------------------------------------------------------------
-//  Kernel runner – fully unrolled, leaf‑function
-// -------------------------------------------------------------------------------------------------
-
-template <class Stage>
-struct Kernel {
-  static inline void run(CommonCtx ctx) {
-    typename Stage::State st{};
-    Stage::start(st, ctx);
-    if constexpr (Stage::length_v > 0)
-      runSteps(st, std::make_index_sequence<Stage::length_v>{});
-    Stage::end(st);
-  }
-
-private:
-  template <std::size_t... Is>
-  static inline void runSteps(typename Stage::State& st, std::index_sequence<Is...>) {
-    (Stage::template next<Is>(st), ...);
-  }
+struct Port {
+  int tile_c;
+  int width = 1;
 };
 
-// -------------------------------------------------------------------------------------------------
-//  Load stage – reads N × 32‑byte tiles
-// -------------------------------------------------------------------------------------------------
-
-template <int N>
-struct Load {
-  static constexpr int length_v = N;
-
-  struct State {
-    const uint8_t* in;
-    CallCheck<N> calls;
-  };
-
-  static inline void start(State& st, CommonCtx ctx) { st.in = ctx.in; }
-  template <int I>
-  static inline uint8x16x2_t next(State& st) {
-    st.calls.template touch<I, true>();
-    return vldpq_u8<I * 32, true>(st.in);
-  }
-  static inline void end(State& st) { st.calls.check(); }
+struct PortPair {
+  Port in;
+  Port out;
 };
 
-// -------------------------------------------------------------------------------------------------
-//  Store stage – writes the tiles it receives
-// -------------------------------------------------------------------------------------------------
+// Adjust scale factors for each kernel to make adjacent ports compatible
+template <std::size_t N>
+consteval std::array<PortPair, N> rewrite_ports(const std::array<PortPair, N>& kernel_ports) {
+  std::array<int, N> scales{};
+  std::fill(scales.begin(), scales.end(), 1);
 
-template <class Src>
-struct Store {
-  static constexpr int length_v = 0;
+  // Compute scale factors for each kernel to make adjacent ports compatible
+  for (std::size_t i = 0; i < N - 1; ++i) {
+    int current_out_port = kernel_ports[i].out.tile_c * scales[i];
+    int next_in_port = kernel_ports[i + 1].in.tile_c * scales[i + 1];
 
-  struct State {
-    typename Src::State src;
-    uint8_t* out;
-  };
+    if (current_out_port != next_in_port) {
+      int min_port = std::min(current_out_port, next_in_port);
+      int max_port = std::max(current_out_port, next_in_port);
 
-  static inline void start(State& st, CommonCtx ctx) {
-    st.out = ctx.out;
-    Src::start(st.src, ctx);
+      if (max_port % min_port != 0) {
+        throw "Kernel port mismatch: scale factor must be integer";
+      }
+
+      int scale_factor = max_port / min_port;
+
+      if (current_out_port < next_in_port) {
+        // Scale current kernel and backtrack to scale all previous kernels
+        for (std::size_t j = 0; j <= i; ++j) {
+          scales[j] *= scale_factor;
+        }
+      } else {
+        scales[i + 1] *= scale_factor;
+      }
+    }
   }
 
-  template <int I>
-  static inline void next(State&) {
-    static_assert(dependent_false_v<std::integral_constant<int, I>>, "Store::next should never be instantiated");
+  // Add computed scales to ports
+  std::array<PortPair, N> scaled_ports = kernel_ports;
+  for (std::size_t i = 0; i < N; ++i) {
+    scaled_ports[i].in = Port{kernel_ports[i].in.tile_c, scales[i]};
+    scaled_ports[i].out = Port{kernel_ports[i].out.tile_c, scales[i]};
   }
+  return scaled_ports;
+}
+
+// Extract and scale a value from an array where at most one element is non-zero, so it patches port width
+template <std::size_t N>
+consteval int extract_one_and_scale_with_ports(const std::array<int, N>& values, const std::array<PortPair, N>& ports) {
+  int result = 0;
+  int non_zero_count = 0;
+
+  for (std::size_t i = 0; i < N; ++i) {
+    if (values[i] != 0) {
+      ++non_zero_count;
+      result = values[i] * ports[i].in.width;
+    }
+  }
+
+  if (non_zero_count > 1) {
+    throw "At most one element can be non-zero";
+  }
+
+  return result;
+}
+
+// Series combinator that chains kernels with automatic port rewriting
+template <class... Ks>
+struct SeriesBase {
+  static_assert(sizeof...(Ks) > 0, "Series must have at least one kernel");
 
 private:
-  template <std::size_t... Is>
-  static inline void storeImpl(State& st, std::index_sequence<Is...>) {
-    (vstpq_u8<Is * 32, false>(st.out, Src::template next<Is>(st.src)), ...);
-  }
+  static constexpr auto original_ports = std::array<PortPair, sizeof...(Ks)>{PortPair{Ks::in_t, Ks::out_t}...};
+  static constexpr auto updated_ports = rewrite_ports(original_ports);
+
+  static constexpr auto ctx_in_incrs =
+      std::array<int, sizeof...(Ks)>{(requires { Ks::ctx_in_incr; } ? Ks::ctx_in_incr : 0)...};
+  static constexpr auto ctx_out_incrs =
+      std::array<int, sizeof...(Ks)>{(requires { Ks::ctx_out_incr; } ? Ks::ctx_out_incr : 0)...};
+
+  template <std::size_t I, class Src, class... RestKs>
+  struct SeriesImpl;
+
+  template <std::size_t I, class Src>
+  struct SeriesImpl<I, Src> {
+    using type = Src;
+  };
+
+  template <std::size_t I, class Src, class K, class... RestKs>
+  struct SeriesImpl<I, Src, K, RestKs...> {
+    using current_impl = typename K::template impl<updated_ports[I].out, updated_ports[I].in, Src>;
+    using type = typename SeriesImpl<I + 1, current_impl, RestKs...>::type;
+  };
 
 public:
-  static inline void end(State& st) {
-    storeImpl(st, std::make_index_sequence<Src::length_v>{});
-    Src::end(st.src);
-  }
+  static constexpr auto in_t = updated_ports[0].in;
+  static constexpr auto out_t = updated_ports[sizeof...(Ks) - 1].out;
+
+  static constexpr int ctx_in_incr = extract_one_and_scale_with_ports(ctx_in_incrs, updated_ports);
+  static constexpr int ctx_out_incr = extract_one_and_scale_with_ports(ctx_out_incrs, updated_ports);
+
+  template <Port OutT, Port InT, class Src>
+  using impl = typename SeriesImpl<0, Src, Ks...>::type;
 };
+
+// Public interface flattens nested Series.
+//
+// Example:
+//   Series<
+//     Load,
+//     Series<Narrow<32, 8>, Pack<8, 6>>,
+//     Store
+//   >
+// becomes:
+//   SeriesBase<
+//     Load,
+//     Narrow<32, 8>,
+//     Pack<8, 6>,
+//     Store
+//   >
+template <class... Ks>
+struct Series;
+template <class... Ks>
+struct Series : SeriesBase<Ks...> {};
+template <class... Nested, class... Rest>
+struct Series<Series<Nested...>, Rest...> : Series<Nested..., Rest...> {};
+template <class First, class... Nested, class... Rest>
+struct Series<First, Series<Nested...>, Rest...> : Series<First, Nested..., Rest...> {};
 
 #define NEONPFOR_STRINGIFY_PRAGMA(x) #x
 #define NEONPFOR_APPLY_PRAGMA(directive) _Pragma(NEONPFOR_STRINGIFY_PRAGMA(directive))
 
-template <class Pipeline, int InIncr, int OutIncr, int UNROLL = 1>
-[[gnu::always_inline]]
-inline void loop(const uint8_t* __restrict in, uint8_t* __restrict out, std::size_t n_iters) {
-  in = static_cast<const uint8_t*>(__builtin_assume_aligned(in, 16));
-  out = static_cast<uint8_t*>(__builtin_assume_aligned(out, 16));
+struct Noop {
+  struct State {};
+  static inline void start(State&, CommonCtx) {}
+  template <int I>
+  static inline void next(State&) {}
+  static inline void end(State&) {}
+};
 
-  NEONPFOR_APPLY_PRAGMA(clang loop unroll_count(UNROLL))
-  for (; n_iters; --n_iters, in += InIncr, out += OutIncr) {
-    Kernel<Pipeline>::run({in, out});
+template <class Kernel, int UnrollCount = 1>
+struct LoopDriver {
+private:
+  static constexpr int InIncr = requires { Kernel::ctx_in_incr; } ? Kernel::ctx_in_incr : 0;
+  static constexpr int OutIncr = requires { Kernel::ctx_out_incr; } ? Kernel::ctx_out_incr : 0;
+
+  using KernelImpl = typename Kernel::template impl<Kernel::out_t, Kernel::in_t, Noop>;
+
+public:
+  static inline void run(const uint8_t* __restrict in, uint8_t* __restrict out, std::size_t n_iters) {
+    in = static_cast<const uint8_t*>(__builtin_assume_aligned(in, 16));
+    out = static_cast<uint8_t*>(__builtin_assume_aligned(out, 16));
+
+    NEONPFOR_APPLY_PRAGMA(clang loop unroll_count(UnrollCount))
+    for (; n_iters; --n_iters, in += InIncr, out += OutIncr) {
+      typename KernelImpl::State state;
+      KernelImpl::start(state, {in, out});
+      [&]<std::size_t... I>(std::index_sequence<I...>) {
+        (KernelImpl::template next<I>(state), ...);
+      }(std::make_index_sequence<Kernel::out_t.tile_c>{});
+      KernelImpl::end(state);
+    }
   }
-}
+};
 
-#undef NEONPFOR_STRINGIFY_PRAGMA
 #undef NEONPFOR_APPLY_PRAGMA
+#undef NEONPFOR_STRINGIFY_PRAGMA
 
 } // namespace CommonPipeline

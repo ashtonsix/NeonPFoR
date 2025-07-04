@@ -2,7 +2,7 @@ CXXFLAGS = -O3 \
 	-g \
 	-Wall \
 	-Wextra \
-	-std=c++17 \
+	-std=c++20 \
 	-I/usr/local/include/simde \
 	-march=armv9.2-a \
 	-mllvm -inlinehint-threshold=10000 # Stop LLVM ignoring inline hints
